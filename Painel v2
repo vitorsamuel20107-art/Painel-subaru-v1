@@ -1,0 +1,183 @@
+#!/bin/bash
+# PAINEL SUBARU VIP - VERSÃO FINAL CORRIGIDA
+
+# Cores
+RED='\e[1;31m'
+GOLD='\e[1;33m'
+WHITE='\e[1;37m'
+GREEN='\e[1;32m'
+CYAN='\e[1;36m'
+RESET='\e[0m'
+
+# ==========================================================
+# --- SISTEMA DE LOGIN PROTEGIDO (KEY OCULTA) ---
+# A senha real (SUBARU-8821) está codificada aqui embaixo:
+KEY_DISFARCADA="U1VCQVJVLTg4MjE="
+KEY_REAL=$(echo "$KEY_DISFARCADA" | base64 -d)
+
+clear
+echo -e "${RED}============================================================${RESET}"
+echo -e "${GOLD}          🔐 ACESSO RESTRITO - SUBARU VIP 🔐${RESET}"
+echo -e "${RED}============================================================${RESET}"
+echo -n -e "${WHITE} ➥ DIGITE SUA KEY DE ACESSO: ${RESET}"
+read user_key
+
+if [[ "$user_key" != "$KEY_REAL" ]]; then
+    echo -e "\n${RED}[❌] KEY INCORRETA! ACESSO NEGADO.${RESET}"
+    exit 1
+fi
+echo -e "\n${GREEN}[✅] ACESSO LIBERADO! BEM-VINDO.${RESET}"
+sleep 2
+# ==========================================================
+
+# Função de Injeção
+injetar() {
+    export RISH_APPLICATION_ID="com.termux"
+    ./rish -c "$1" > /dev/null 2>&1
+    return $?
+}
+
+# Loop principal para manter o menu ativo sem bugar a tela
+while true; do
+    clear
+    echo -e "${RED}  ███████╗██╗   ██╗██████╗  █████╗ ██████╗ ██╗   ██╗"
+    echo -e "  ██╔════╝██║   ██║██╔══██╗██╔══██╗██╔══██╗██║   ██║"
+    echo -e "  ███████╗██║   ██║██████╔╝███████║██████╔╝██║   ██║"
+    echo -e "  ╚════██║██║   ██║██╔══██╗██╔══██║██╔══██║██║   ██║"
+    echo -e "  ███████║╚██████╔╝██████╔╝██║  ██║██║  ██║╚██████╔╝${RESET}"
+    echo -e "${GOLD}          👑 PAINEL SUBARU VIP - ELITE APOSTADO 👑${RESET}"
+    echo -e "${RED}============================================================${RESET}"
+    echo -e " 📱 DISPOSITIVO: ${CYAN}MOTOROLA Edge 30 Fusion${RESET}"
+    echo -e " 🤖 SISTEMA:     ${CYAN}Android 14 (Shizuku Ativo)${RESET}"
+    echo -e "${RED}============================================================${RESET}"
+
+    # Menu Organizado em Ordem Numérica e Colunas Alinhadas
+    echo -e "${GOLD} [99] 🚀 INJEÇÃO TOTAL        [77] 🧠 OTIMIZAR SISTEMA${RESET}"
+    echo -e "${WHITE} [01] 🎯 SENSI EMULADOR       [07] 👻 MODO GHOST${RESET}"
+    echo -e "${WHITE} [02] 📱 DPI COMPETITIVA      [08] 🛡️ ANTI-BAN & PING${RESET}"
+    echo -e "${WHITE} [03] 🎯 DPI PADRÃO (CAPA)    [09] 📊 MONITOR FPS${RESET}"
+    echo -e "${WHITE} [04] 🧠 RAM & CPU VIP        [10] 🧹 LIMPEZA TOTAL${RESET}"
+    echo -e "${WHITE} [05] 🎮 GPU ADRENO MAX       [11] 🚫 FECHAR APPS${RESET}"
+    echo -e "${WHITE} [06] ⚡ TELA 144Hz PURO      [12] 🔄 RESET TOTAL${RESET}"
+    echo -e "${RED} [00] ❌ SAIR DO PAINEL${RESET}"
+    echo -e "${RED}------------------------------------------------------------${RESET}"
+    echo -n -e "${GOLD} ➥ DIGITE O COMANDO VIP: ${RESET}"
+    
+    # Lendo a opção do usuário
+    read opcao
+
+    # Desativa o texto do terminal (impede digitação durante injeção)
+    stty -echo
+
+    case $opcao in
+    99)
+        echo -e "\n${GOLD}[!] INICIANDO INJEÇÃO TOTAL (MÁXIMA PERFORMANCE)...${RESET}"
+        injetar "settings put secure accessibility_touch_slop 1" && R1="${GREEN}✅${RESET}" || R1="${RED}💀${RESET}"
+        injetar "settings put system pointer_speed 14" && R2="${GREEN}✅${RESET}" || R2="${RED}💀${RESET}"
+        injetar "wm density 300" && R3="${GREEN}✅${RESET}" || R3="${RED}💀${RESET}"
+        injetar "settings put global force_msaa true" && R4="${GREEN}✅${RESET}" || R4="${RED}💀${RESET}"
+        injetar "settings put global peak_refresh_rate 144.0" && R5="${GREEN}✅${RESET}" || R5="${RED}💀${RESET}"
+        
+        echo -e "${WHITE}➥ TOQUE/SENSI: $R1 | VELOCIDADE: $R2 | DPI ALTA: $R3${RESET}"
+        echo -e "${WHITE}➥ GPU NO TALO: $R4 | TELA 144Hz: $R5${RESET}"
+        echo -e "\n${GOLD}[!] Verificação concluída. Voltando em 4s...${RESET}"
+        sleep 4
+        ;;
+
+    77)
+        echo -e "\n${GOLD}[!] OTIMIZANDO SISTEMA AO MÁXIMO (0 DELAY)...${RESET}"
+        injetar "settings put global window_animation_scale 0.0" && A1="${GREEN}✅${RESET}" || A1="${RED}💀${RESET}"
+        injetar "settings put global transition_animation_scale 0.0" && A2="${GREEN}✅${RESET}" || A2="${RED}💀${RESET}"
+        injetar "settings put global animator_duration_scale 0.0" && A3="${GREEN}✅${RESET}" || A3="${RED}💀${RESET}"
+        injetar "pm trim-caches 999G" && A4="${GREEN}✅${RESET}" || A4="${RED}💀${RESET}"
+        injetar "am kill-all" && A5="${GREEN}✅${RESET}" || A5="${RED}💀${RESET}"
+        
+        echo -e "${WHITE}➥ ANIMAÇÕES OFF: $A1 $A2 $A3${RESET}"
+        echo -e "${WHITE}➥ CACHE LIMPO: $A4 | APPS MORTOS: $A5${RESET}"
+        echo -e "\n${GOLD}[!] Otimização concluída. Voltando em 4s...${RESET}"
+        sleep 4
+        ;;
+
+    01|1)
+        echo -e "\n${GOLD}[!] APLICANDO SENSI EXTREMA...${RESET}"
+        injetar "settings put secure accessibility_touch_slop 1" && echo -e "${GREEN}[✅] SUCESSO!${RESET}" || echo -e "${RED}[💀] ERRO!${RESET}"
+        sleep 4
+        ;;
+
+    02|2)
+        echo -e "\n${GOLD}[!] DPI ALTA (APELÃO)...${RESET}"
+        injetar "wm density 300" && echo -e "${GREEN}[✅] SUCESSO!${RESET}" || echo -e "${RED}[💀] ERRO!${RESET}"
+        sleep 4
+        ;;
+
+    03|3)
+        injetar "wm density reset" && echo -e "${GREEN}[✅] DPI RESETADA!${RESET}"
+        sleep 4
+        ;;
+
+    04|4)
+        injetar "settings put global ram_expand_size 0" && echo -e "${GREEN}[✅] RAM OTIMIZADA!${RESET}"
+        sleep 4
+        ;;
+
+    05|5)
+        injetar "settings put global force_msaa true" && echo -e "${GREEN}[✅] GPU NO MÁXIMO!${RESET}"
+        sleep 4
+        ;;
+
+    06|6)
+        injetar "settings put global peak_refresh_rate 144.0" && echo -e "${GREEN}[✅] 144Hz ATIVO!${RESET}"
+        sleep 4
+        ;;
+
+    07|7)
+        injetar "settings put global accessibility_display_inversion_enabled 0" && echo -e "${GREEN}[✅] MODO GHOST!${RESET}"
+        sleep 4
+        ;;
+
+    08|8)
+        injetar "settings put global wifi_sleep_policy 2" && echo -e "${GREEN}[✅] PING ESTABILIZADO!${RESET}"
+        sleep 4
+        ;;
+
+    09|9)
+        echo -e "\n${GOLD}[!] ATIVANDO MONITOR DE FPS...${RESET}"
+        injetar "settings put secure show_refresh_rate 1" && echo -e "${GREEN}[✅] MONITOR ATIVO!${RESET}" || echo -e "${RED}[💀] ERRO!${RESET}"
+        sleep 4
+        ;;
+
+    10)
+        echo -e "\n${GOLD}[!] LIMPANDO CACHE TOTAL...${RESET}"
+        injetar "pm trim-caches 999G" && echo -e "${GREEN}[✅] LIMPEZA CONCLUÍDA!${RESET}"
+        sleep 4
+        ;;
+
+    11)
+        injetar "am kill-all" && echo -e "${GREEN}[✅] APPS FECHADOS!${RESET}"
+        sleep 4
+        ;;
+
+    12)
+        injetar "wm density reset"
+        injetar "settings put global window_animation_scale 1.0"
+        injetar "settings put global transition_animation_scale 1.0"
+        injetar "settings put global animator_duration_scale 1.0"
+        injetar "settings put secure show_refresh_rate 0"
+        echo -e "${GREEN}[✅] TUDO RESETADO PARA FÁBRICA!${RESET}"
+        sleep 4
+        ;;
+
+    00|0)
+        stty echo # Devolve o teclado ao usuário
+        clear
+        exit 0
+        ;;
+    
+    *)
+        ;;
+    esac
+
+    # Descarta sujeira digitada sem querer no sleep e devolve o teclado
+    read -t 0.1 -n 10000 discard
+    stty echo
+done
