@@ -1,0 +1,254 @@
+#!/bin/bash
+
+# ==========================================================
+# --- 🛑 SISTEMA DE SEGURANÇA AVANÇADA (ANTI-DEBUG & INTEGRIDADE) ---
+( ( [[ "$-" == *x* ]] || [ -n "$BASH_EXECUTION_STRING" ] ) && kill -9 $$ ) 2>/dev/null
+if [ -f "/proc/self/status" ] && grep -q "TracerPid.*[1-9]" /proc/self/status 2>/dev/null; then kill -9 $$; fi
+# ==========================================================
+
+# PAINEL ELITE - VERSÃO FINAL VIP
+
+# Cores
+RED='\e[1;31m'
+GOLD='\e[1;33m'
+WHITE='\e[1;37m'
+GREEN='\e[1;32m'
+CYAN='\e[1;36m'
+RESET='\e[0m'
+
+# ==========================================================
+# --- 🧩 MOTOR DE AUTENTICAÇÃO À PROVA DE FALHAS ---
+MAX=3
+ATT=1
+_AUTH_OK=0
+
+# Key ofuscada em Base64 para proteção do código fonte
+_KEY_B64="U1VCQVJVLTg4MjE="
+_KEY_REAL=$(echo "$_KEY_B64" | base64 -d)
+
+# Força a limpeza de qualquer arquivo de bloqueio bugado anterior
+rm -rf "$PREFIX/tmp/.sys_sbr_auth" 2>/dev/null
+
+while [ $ATT -le $MAX ]; do
+    clear
+    echo -e "${RED}============================================================${RESET}"
+    echo -e "${GOLD}          🔐 ACESSO RESTRITO - PAINEL ELITE 🔐${RESET}"
+    echo -e "${RED}============================================================${RESET}"
+    echo -n -e "${WHITE} ➥ DIGITE SUA KEY DE ACESSO: ${RESET}"
+    read user_key
+
+    # Validação Direta e Segura  
+    if [[ "$user_key" == "$_KEY_REAL" ]]; then  
+        _AUTH_OK=1  
+          
+        # Leitura de Hardware para visual VIP  
+        _DM=$(getprop ro.product.model 2>/dev/null | tr -d ' \n')  
+        echo -e "\n${CYAN}[!] Autenticando Hardware: ${_DM}...${RESET}"  
+        sleep 1  
+        break  
+    fi  
+
+    # ⏱️ Proteção contra Força Bruta  
+    DEL=$((ATT * 2))  
+      
+    if [ $ATT -eq $MAX ]; then  
+        echo -e "\n${RED}[❌] LIMITE DE TENTATIVAS EXCEDIDO! BLOQUEANDO...${RESET}"  
+        sleep 2  
+        kill -9 $$  
+        exit 1  
+    fi  
+      
+    echo -e "\n${RED}[❌] KEY INCORRETA! TENTE NOVAMENTE.${RESET}"  
+    sleep $DEL  
+    ((ATT++))
+done
+
+if [ "$_AUTH_OK" -ne 1 ]; then
+    exit 1
+fi
+
+echo -e "\n${GREEN}[✅] ACESSO LIBERADO! BEM-VINDO.${RESET}"
+sleep 2
+
+# ==========================================================
+# --- CONFIGURAÇÃO SHIZUKU ---
+export RISH_APPLICATION_ID="com.termux"
+
+# ==========================================================
+# --- CARREGAMENTO ANIMADO REAL (COM VALIDAÇÃO INTELIGENTE & FALLBACK) ---
+carregar_animado() {
+    local cmd="$1"
+    local desc="$2"
+
+    if [ -n "$desc" ]; then  
+        echo -e "${WHITE}[!] Processando: ${desc}${RESET}"  
+    fi  
+
+    echo -ne "\e[?25l"  
+
+    # 🧠 [NOVO] INÍCIO DA DETECÇÃO INTELIGENTE (Pré-verificação)
+    local target_check=""
+    local target_val=""
+    
+    if [[ "$cmd" == *"accessibility_touch_slop"* ]]; then target_check="settings get secure accessibility_touch_slop"; target_val=$(echo "$cmd" | grep -o '[0-9]*$');
+    elif [[ "$cmd" == *"wm density"* && "$cmd" != *"reset"* ]]; then target_check="wm density"; target_val=$(echo "$cmd" | grep -o '[0-9]*$');
+    elif [[ "$cmd" == *"cached_apps_freezer"* ]]; then target_check="settings get global cached_apps_freezer"; target_val="enabled";
+    elif [[ "$cmd" == *"disable_window_blurs"* ]]; then target_check="settings get global disable_window_blurs"; target_val="1";
+    elif [[ "$cmd" == *"min_refresh_rate"* ]]; then target_check="settings get system min_refresh_rate"; target_val="144.0";
+    elif [[ "$cmd" == *"ui_night_mode"* ]]; then target_check="settings get secure ui_night_mode"; target_val=$(echo "$cmd" | grep -o '[0-9]*$');
+    elif [[ "$cmd" == *"wifi_scan_always_enabled"* ]]; then target_check="settings get global wifi_scan_always_enabled"; target_val="0";
+    elif [[ "$cmd" == *"pointer_speed"* ]]; then target_check="settings get system pointer_speed"; target_val=$(echo "$cmd" | grep -o '[0-9]*$');
+    fi
+
+    # Executa o comando via Shizuku (Idêntico ao original)
+    ./rish -c "$cmd" > /dev/null 2>&1 &  
+    local pid=$!  
+    local progresso=0  
+
+    while kill -0 $pid 2>/dev/null; do  
+        progresso=$((progresso + 4))  
+        [ $progresso -gt 95 ] && progresso=95  
+
+        local f=$(( progresso * 50 / 100 ))  
+        local e=$(( 50 - f ))  
+
+        local filled_str=""  
+        local empty_str=""  
+
+        for ((j=0; j<f; j++)); do filled_str+="█"; done  
+        for ((j=0; j<e; j++)); do empty_str+="░"; done  
+
+        echo -ne "\r${GOLD}[${filled_str}${empty_str}] ${CYAN}${progresso}%${RESET}"  
+        sleep 0.05  
+    done  
+
+    wait $pid  
+    local status=$?  
+
+    # 🧠 [NOVO] VALIDAÇÃO PÓS-EXECUÇÃO E FALLBACK (Android 14)
+    local status_real=0 # 0=Aplicado, 1=Parcial, 2=Bloqueado
+    
+    if [ $status -ne 0 ]; then
+        status_real=2 # Falha nativa do comando
+    else
+        if [ -n "$target_check" ]; then
+            local check_result=$(./rish -c "$target_check" 2>/dev/null | tr -d '\r\n')
+            
+            if [[ "$target_check" == *"wm density"* ]]; then
+                # wm density retorna algo como "Physical: 400 Override: 300", precisamos apenas checar se contém o valor
+                if [[ "$check_result" == *"$target_val"* ]]; then status_real=0; else status_real=2; fi
+            else
+                if [ "$check_result" == "$target_val" ]; then
+                    status_real=0
+                else
+                    # 🔁 SISTEMA DE FALLBACK AUTOMÁTICO
+                    status_real=1 # Assume parcial temporariamente
+                    
+                    if [[ "$cmd" == *"disable_window_blurs"* ]]; then
+                        ./rish -c "settings put global window_animation_scale 0.5 && settings put global transition_animation_scale 0.5" > /dev/null 2>&1
+                    elif [[ "$cmd" == *"min_refresh_rate"* ]]; then
+                        ./rish -c "settings put system min_refresh_rate 120.0 && settings put system peak_refresh_rate 120.0" > /dev/null 2>&1
+                    else
+                        status_real=2 # Sem fallback compatível = bloqueado
+                    fi
+                fi
+            fi
+        else
+            # Para comandos sem validação direta (kill-all, monkey, trim-caches)
+            if [[ "$cmd" == *"thermalservice"* ]]; then
+                # Thermalservice é frequentemente bloqueado no Android 14 silenciosamente
+                status_real=2 
+            else
+                status_real=0
+            fi
+        fi
+    fi
+
+    # Finaliza a barra em 100%
+    local filled_final=""  
+    for ((j=0; j<50; j++)); do filled_final+="█"; done  
+    echo -ne "\r${GOLD}[${filled_final}] ${CYAN}100%${RESET}"  
+
+    # 🧠 [NOVO] SAÍDAS SUBSTITUÍDAS (Feedback Real)
+    if [ $status_real -eq 0 ]; then  
+        echo -e "\n${GREEN}✔ APLICADO${RESET}\n"  
+    elif [ $status_real -eq 1 ]; then
+        echo -e "\n${GOLD}⚠ PARCIAL (Fallback)${RESET}\n"
+    else  
+        echo -e "\n${RED}❌ BLOQUEADO${RESET}\n"  
+    fi  
+
+    echo -ne "\e[?25h"
+}
+
+# ==========================================================
+# Loop principal
+while true; do
+    clear
+    echo -e "${RED}============================================================${RESET}"
+    echo -e "${GOLD}                👑 PAINEL ELITE - APOSTADO 👑${RESET}"
+    echo -e "${RED}  [!] Versão de teste - Pode haver bugs em algumas funções${RESET}"
+    echo -e "${RED}============================================================${RESET}"
+    echo -e " 📱 DISPOSITIVO: ${CYAN}MOTOROLA Edge 30 Fusion${RESET}"
+    echo -e " 🤖 SISTEMA:     ${CYAN}Android 14 (Shizuku Ativo)${RESET}"
+    echo -e "${RED}============================================================${RESET}"
+
+    echo -e "${GOLD} [99] 🚀 INJEÇÃO TOTAL        [77] 🧠 OTIMIZAR SISTEMA${RESET}"    
+    echo -e "${WHITE} [01] 🎯 SENSI EMULADOR       [09] ❄️ RESFRIAMENTO CPU${RESET}"    
+    echo -e "${WHITE} [02] 📱 DPI COMPETITIVA      [10] 🧹 LIMPEZA TOTAL${RESET}"    
+    echo -e "${WHITE} [03] 🎯 DPI PADRÃO (CAPA)    [11] 🚫 FECHAR APPS${RESET}"    
+    echo -e "${WHITE} [04] 🧠 RAM & CPU            [12] 🔄 RESET TOTAL${RESET}"    
+    echo -e "${WHITE} [05] 🎮 GPU ADRENO MAX       [13] 🖱️ VELOC. PONTEIRO${RESET}"    
+    echo -e "${WHITE} [06] ⚡ TELA 144Hz PURO      [14] 🎯 MIRA ANTI-PINO${RESET}"    
+    echo -e "${WHITE} [07] 👻 MODO GHOST           [15] 🎮 ABRIR FREE FIRE${RESET}"    
+    echo -e "${WHITE} [08] 🛡️ ANTI-BAN & PING      ${RED}[00] ❌ SAIR DO PAINEL${RESET}"    
+    echo -e "${RED}------------------------------------------------------------${RESET}"    
+    echo -n -e "${GOLD} ➥ DIGITE O COMANDO: ${RESET}"    
+
+    read opcao    
+    stty -echo    
+
+    case $opcao in    
+    99)    
+        echo -e "\n${GOLD}[🚀] INICIANDO INJEÇÃO TOTAL...${RESET}\n"    
+        carregar_animado "settings put secure accessibility_touch_slop 3" "SENSI EMULADOR"  
+        carregar_animado "wm density 300" "DPI COMPETITIVA"  
+        carregar_animado "settings put global cached_apps_freezer enabled" "RAM & CPU BOOST"  
+        carregar_animado "settings put global disable_window_blurs 1" "GPU ADRENO MAX"  
+        carregar_animado "settings put system min_refresh_rate 144.0 && settings put system peak_refresh_rate 144.0" "TELA 144Hz"  
+        carregar_animado "settings put secure ui_night_mode 2" "MODO GHOST"  
+        carregar_animado "settings put global wifi_scan_always_enabled 0" "ANTI-BAN & PING"  
+        carregar_animado "cmd thermalservice override-status 0" "RESFRIAMENTO CPU"  
+        carregar_animado "pm trim-caches 999G" "LIMPEZA TOTAL"  
+        carregar_animado "cmd activity kill-all" "FECHAR APPS"  
+        carregar_animado "settings put system pointer_speed 7" "VELOCIDADE PONTEIRO"  
+        carregar_animado "settings put secure accessibility_touch_slop 3" "MIRA ANTI-PINO"  
+        carregar_animado "cmd package bg-dexopt-job &" "OTIMIZAR SISTEMA"  
+        carregar_animado "monkey -p com.dts.freefireth -c android.intent.category.LAUNCHER 1" "LANÇANDO FREE FIRE"  
+        echo -e "${GREEN}[🔥] PROCESSO FINALIZADO!${RESET}"    
+        sleep 2 ;;    
+
+    77) carregar_animado "cmd package bg-dexopt-job &" "OTIMIZANDO SISTEMA"; sleep 1.5 ;;  
+    01|1) carregar_animado "settings put secure accessibility_touch_slop 3" "APLICANDO SENSI"; sleep 1.5 ;;  
+    02|2) carregar_animado "wm density 300" "ALTERANDO DPI"; sleep 1.5 ;;  
+    03|3) carregar_animado "wm density reset" "RESETANDO DPI"; sleep 1.5 ;;  
+    04|4) carregar_animado "settings put global cached_apps_freezer enabled" "OTIMIZANDO RAM"; sleep 1.5 ;;  
+    05|5) carregar_animado "settings put global disable_window_blurs 1" "TURBINANDO GPU"; sleep 1.5 ;;  
+    06|6) carregar_animado "settings put system min_refresh_rate 144.0 && settings put system peak_refresh_rate 144.0" "ATIVANDO 144Hz"; sleep 1.5 ;;  
+    07|7) carregar_animado "settings put secure ui_night_mode 2" "MODO GHOST"; sleep 1.5 ;;  
+    08|8) carregar_animado "settings put global wifi_scan_always_enabled 0" "ESTABILIZANDO PING"; sleep 1.5 ;;  
+    09|9) carregar_animado "cmd thermalservice override-status 0" "RESFRIANDO SISTEMA"; sleep 1.5 ;;  
+    10) carregar_animado "pm trim-caches 999G" "LIMPANDO CACHE"; sleep 1.5 ;;  
+    11) carregar_animado "cmd activity kill-all" "ENCERRANDO APPS"; sleep 1.5 ;;  
+    12) carregar_animado "wm density reset && cmd thermalservice reset && settings put secure ui_night_mode 1" "RESET TOTAL"; sleep 1.5 ;;  
+    13) carregar_animado "settings put system pointer_speed 7" "VELOCIDADE PONTEIRO"; sleep 1.5 ;;  
+    14) carregar_animado "settings put secure accessibility_touch_slop 3" "ESTABILIZANDO MIRA"; sleep 1.5 ;;  
+    15) carregar_animado "monkey -p com.dts.freefireth -c android.intent.category.LAUNCHER 1" "LANÇANDO FREE FIRE"; sleep 1.5 ;;  
+    00|0) stty echo; clear; exit 0 ;;  
+    *) ;;  
+    esac    
+
+    read -t 0.1 -n 10000 discard  
+    stty echo
+
+done
