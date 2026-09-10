@@ -1,0 +1,2881 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://users.roblox.com https://thumbnails.roproxy.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+<title>NIGHT Vault — Gerenciador de Keys</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;
+  --surface-1:#111118;
+  --surface-2:#18181f;
+  --surface-3:#1f1f28;
+  --surface-4:#26263200;
+  --border:#2a2a3a;
+  --border-light:#33334a;
+  --accent:#7c5cfc;
+  --accent-dim:#3d2e7a;
+  --accent-glow:rgba(124,92,252,.15);
+  --green:#22d3a0;
+  --green-dim:#0d4a38;
+  --yellow:#f59e0b;
+  --yellow-dim:#4a3200;
+  --red:#ef4444;
+  --red-dim:#4a1010;
+  --gray:#64648a;
+  --text:#e8e8f0;
+  --text-2:#9898b8;
+  --text-3:#5c5c7a;
+  --radius:10px;
+  --radius-lg:16px;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.app{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:220px;background:var(--surface-1);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100;transition:.3s}
+.logo{padding:20px 20px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.logo-text{font-weight:700;font-size:15px;letter-spacing:-.3px}
+.logo-sub{font-size:10px;color:var(--text-3);letter-spacing:.5px;text-transform:uppercase}
+nav{flex:1;padding:12px 8px;overflow-y:auto}
+.nav-group{margin-bottom:16px}
+.nav-label{font-size:10px;font-weight:600;color:var(--text-3);letter-spacing:.8px;text-transform:uppercase;padding:0 12px;margin-bottom:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text-2);transition:.15s;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface-3);color:var(--text)}
+.nav-item.active{background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent-dim)}
+.nav-item .nav-icon{width:16px;text-align:center;font-size:16px}
+.nav-badge{margin-left:auto;background:var(--surface-3);color:var(--text-3);font-size:11px;font-weight:600;padding:1px 7px;border-radius:20px}
+.nav-badge.green{background:var(--green-dim);color:var(--green)}
+.sidebar-bottom{padding:12px;border-top:1px solid var(--border)}
+
+/* Main */
+.main{margin-left:220px;flex:1;min-height:100vh}
+.topbar{height:56px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;background:var(--bg);z-index:50}
+.topbar-title{font-size:15px;font-weight:600;flex:1}
+.topbar-btn{background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;transition:.15s;display:flex;align-items:center;gap:6px}
+.topbar-btn:hover{background:var(--surface-3);color:var(--text);border-color:var(--border-light)}
+.page{padding:24px;max-width:1100px}
+
+/* Cards */
+.card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.card-sm{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;transition:.2s}
+.stat-card:hover{border-color:var(--border-light);transform:translateY(-1px)}
+.stat-label{font-size:11px;font-weight:500;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat-value{font-size:24px;font-weight:700;letter-spacing:-1px}
+.stat-sub{font-size:11px;color:var(--text-3);margin-top:3px}
+.stat-green .stat-value{color:var(--green)}
+.stat-red .stat-value{color:var(--red)}
+.stat-yellow .stat-value{color:var(--yellow)}
+.stat-purple .stat-value{color:var(--accent)}
+
+/* Generate section */
+.gen-section{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:24px}
+.gen-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.gen-title{font-size:15px;font-weight:600}
+.gen-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.gen-field label{font-size:12px;font-weight:500;color:var(--text-3);display:block;margin-bottom:6px}
+.gen-field select,.gen-field input{width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;outline:none;appearance:none;transition:.15s}
+.gen-field select:hover,.gen-field input:hover{border-color:var(--border-light)}
+.gen-field select:focus,.gen-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+
+/* Key display */
+.key-display{display:none;background:var(--surface-2);border:1px solid var(--accent-dim);border-radius:var(--radius);padding:16px;margin-top:16px;animation:fadeIn .3s ease}
+.key-display.show{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.key-value{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:600;color:var(--accent);letter-spacing:1px;word-break:break-all;margin-bottom:12px}
+.key-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.meta-chip{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-2);background:var(--surface-3);padding:4px 10px;border-radius:20px}
+.key-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#6b4de0;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--text-2);border:1px solid var(--border)}
+.btn-outline:hover{background:var(--surface-2);color:var(--text);border-color:var(--border-light)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid var(--red-dim)}
+.btn-danger:hover{background:var(--red-dim);color:var(--red)}
+.btn-green{background:transparent;color:var(--green);border:1px solid var(--green-dim)}
+.btn-green:hover{background:var(--green-dim)}
+.btn-lg{padding:11px 22px;font-size:14px;font-weight:600;border-radius:10px}
+
+/* Table */
+.table-wrap{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.table-header{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border)}
+.table-title{font-size:14px;font-weight:600;flex:1}
+.search-wrap{position:relative;flex:1;max-width:260px}
+.search-wrap input{width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 12px 7px 32px;font-size:13px;font-family:inherit;outline:none;transition:.15s}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:14px;pointer-events:none}
+.filter-tabs{display:flex;gap:4px;padding:0 20px 0;margin-bottom:0}
+.filter-tab{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text-3);background:none;border:none;font-family:inherit;transition:.15s}
+.filter-tab:hover{color:var(--text-2);background:var(--surface-2)}
+.filter-tab.active{color:var(--accent);background:var(--accent-glow)}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--border)}
+th{padding:10px 14px;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;text-align:left;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:.15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface-2)}
+td{padding:12px 14px;font-size:13px;vertical-align:middle}
+.key-cell{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);font-weight:600}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:var(--green-dim);color:var(--green)}
+.badge-yellow{background:var(--yellow-dim);color:var(--yellow)}
+.badge-red{background:var(--red-dim);color:var(--red)}
+.badge-gray{background:var(--surface-3);color:var(--text-3)}
+.dot{width:6px;height:6px;border-radius:50%}
+.dot-green{background:var(--green);animation:pulse 2s infinite}
+.dot-yellow{background:var(--yellow)}
+.dot-red{background:var(--red)}
+.dot-gray{background:var(--gray)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.countdown{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text-2)}
+.countdown.expiring{color:var(--yellow);font-weight:600}
+.countdown.expired{color:var(--red)}
+.row-actions{display:flex;gap:4px;align-items:center}
+.icon-btn{width:28px;height:28px;border-radius:6px;background:none;border:1px solid transparent;color:var(--text-3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:.15s;font-family:inherit}
+.icon-btn:hover{background:var(--surface-3);border-color:var(--border);color:var(--text)}
+.icon-btn.danger:hover{background:var(--red-dim);border-color:var(--red-dim);color:var(--red)}
+
+/* Toast */
+.toast-wrap{position:fixed;top:16px;right:16px;display:flex;flex-direction:column;gap:8px;z-index:1000;pointer-events:none}
+.toast{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;pointer-events:auto;animation:slideIn .25s ease;box-shadow:var(--shadow);min-width:200px;max-width:320px}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-icon{font-size:18px;flex-shrink:0}
+.toast-out{animation:slideOut .3s ease forwards}
+@keyframes slideOut{to{transform:translateX(120%);opacity:0}}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-bg.show{display:flex}
+.modal{background:var(--surface-1);border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:24px;width:100%;max-width:440px;animation:fadeIn .2s ease}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.modal p{font-size:14px;color:var(--text-2);line-height:1.6;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* History */
+.history-list{display:flex;flex-direction:column;gap:1px}
+.history-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:13px;border-bottom:1px solid var(--border)}
+.history-item:last-child{border-bottom:none}
+.h-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.h-text{flex:1}
+.h-key{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);display:block}
+.h-time{font-size:11px;color:var(--text-3);white-space:nowrap}
+
+/* Loading spinner */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--text-3)}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.empty h4{font-size:15px;color:var(--text-2);margin-bottom:6px}
+.empty p{font-size:13px}
+
+/* Settings */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.setting-row{display:flex;flex-direction:column;gap:6px}
+.setting-row label{font-size:12px;font-weight:500;color:var(--text-3)}
+.setting-row input,.setting-row select{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;outline:none;transition:.15s}
+.setting-row input:focus,.setting-row select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.section-title{font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* Mobile hamburger */
+.hamburger{display:none;background:none;border:none;color:var(--text);cursor:pointer;font-size:20px;padding:4px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);transition:.3s}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:flex}
+  .overlay.show{display:block}
+  .gen-options{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .settings-grid{grid-template-columns:1fr}
+  .page{padding:16px}
+  #keysTableWrap th:nth-child(4),#keysTableWrap td:nth-child(4),#keysTableWrap th:nth-child(5),#keysTableWrap td:nth-child(5),#keysTableWrap th:nth-child(7),#keysTableWrap td:nth-child(7){display:none}
+  .ku-grid{grid-template-columns:1fr}
+  .api-grid{grid-template-columns:1fr}
+  .table-header{flex-wrap:wrap}
+  .table-header .table-title{width:100%}
+  .table-header .search-wrap{max-width:none;order:3}
+  .table-header .view-toggle{order:4}
+  .table-header .topbar-btn{order:5}
+  .ku-card-grid{grid-template-columns:1fr}
+}
+
+/* Detail panel */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.detail-item label{font-size:11px;color:var(--text-3);display:block;margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+.detail-item span{font-size:13px;color:var(--text)}
+.detail-item .mono{font-family:'JetBrains Mono',monospace;color:var(--accent)}
+
+/* Progress bar */
+.progress-bar{height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:2px;transition:width 1s linear}
+.fill-green{background:var(--green)}
+.fill-yellow{background:var(--yellow)}
+.fill-red{background:var(--red)}
+
+/* Chart */
+.mini-chart{height:80px;display:flex;align-items:flex-end;gap:6px;padding:8px 0 0}
+.chart-bar{flex:1;border-radius:4px 4px 0 0;min-height:4px;background:var(--accent-dim);transition:.3s;position:relative;cursor:pointer}
+.chart-bar:hover{background:var(--accent);opacity:.8}
+.chart-labels{display:flex;gap:6px;margin-top:4px}
+.chart-label{flex:1;text-align:center;font-size:10px;color:var(--text-3)}
+
+/* View toggle */
+.view-toggle{display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:2px}
+.view-toggle button{background:none;border:none;color:var(--text-3);padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500}
+.view-toggle button.active{background:var(--surface-3);color:var(--text)}
+
+/* Avatar */
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--surface-3);object-fit:cover;flex-shrink:0;border:1px solid var(--border)}
+.avatar-sm{width:24px;height:24px}
+.avatar-lg{width:64px;height:64px}
+.player-cell{display:flex;align-items:center;gap:8px}
+.player-name{font-size:13px;font-weight:500}
+.player-sub{font-size:11px;color:var(--text-3)}
+
+/* Key/User cards */
+.ku-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.ku-card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;transition:.15s;cursor:pointer}
+.ku-card:hover{border-color:var(--border-light);transform:translateY(-1px)}
+.ku-card-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.ku-card-key{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);word-break:break-all;margin-bottom:10px}
+.ku-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11.5px;color:var(--text-2)}
+.ku-card-grid b{color:var(--text);font-weight:500}
+
+/* Blacklist */
+.type-chip{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px}
+.type-hwid{background:var(--accent-glow);color:var(--accent)}
+.type-userId{background:var(--yellow-dim);color:var(--yellow)}
+.type-account{background:var(--red-dim);color:var(--red)}
+
+/* Integration cards */
+.api-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:20px}
+.api-card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px}
+.api-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.api-card-name{font-size:14px;font-weight:600}
+.api-card-key{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);background:var(--surface-2);padding:6px 10px;border-radius:6px;margin:8px 0;word-break:break-all}
+.api-stat-row{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-2);padding:4px 0;border-top:1px solid var(--border)}
+.perm-list{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}
+.perm-chip{font-size:10.5px;padding:3px 8px;border-radius:20px;background:var(--surface-2);color:var(--text-3);border:1px solid var(--border);cursor:pointer;user-select:none;transition:.15s}
+.perm-chip.on{background:var(--green-dim);color:var(--green);border-color:var(--green-dim)}
+.secret-box{background:var(--surface-2);border:1px dashed var(--accent-dim);border-radius:8px;padding:14px;margin:12px 0}
+.secret-box .key-value{font-size:14px;margin-bottom:8px}
+
+/* Banner */
+.banner{border-radius:10px;padding:10px 14px;font-size:12.5px;display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.banner-warn{background:var(--yellow-dim);color:var(--yellow);border:1px solid var(--yellow-dim)}
+.banner-test{background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent-dim)}
+.diagnostic-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.diagnostic-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);font-size:12.5px}
+.diagnostic-item.ok{border-color:var(--green-dim)}.diagnostic-item.warn{border-color:var(--yellow-dim)}.diagnostic-item.fail{border-color:var(--red-dim)}
+.diagnostic-icon{font-weight:700;min-width:18px;text-align:center}.diagnostic-item.ok .diagnostic-icon{color:var(--green)}.diagnostic-item.warn .diagnostic-icon{color:var(--yellow)}.diagnostic-item.fail .diagnostic-icon{color:var(--red)}
+.diagnostic-detail{color:var(--text-2);margin-top:3px;line-height:1.45}.diagnostic-time{font-size:11px;color:var(--text-3);margin-left:auto;white-space:nowrap}
+.error-box{background:var(--red-dim);border:1px solid var(--red-dim);border-radius:8px;padding:12px;color:#ffb4ba;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.code-box{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text-2);font:11px/1.5 'JetBrains Mono',monospace;white-space:pre-wrap;word-break:break-word}
+
+/* Small text link btn */
+.link-btn{background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline;padding:0}
+
+/* NIGHT Vault mobile polish */
+:root{--bg:#07090d;--surface-1:#10141b;--surface-2:#151b24;--surface-3:#1d2633;--border:#263241;--border-light:#344458;--accent:#e01824;--accent-dim:#71151d;--accent-glow:rgba(224,24,36,.16);--green:#32d6a0;--green-dim:#0d3d34;--yellow:#f5b84b;--yellow-dim:#4a350d;--red:#ff5260;--red-dim:#4a1118;--gray:#718096;--text:#f4f6fa;--text-2:#a5b0bf;--text-3:#687589;--shadow:0 12px 34px rgba(0,0,0,.42)}
+body{background:radial-gradient(circle at 78% -10%,rgba(224,24,36,.13),transparent 31%),var(--bg)}
+.logo-icon{background:linear-gradient(145deg,#ee2634,#8e0e17);box-shadow:0 8px 18px rgba(224,24,36,.25)}
+.logo-text{letter-spacing:.2px}.logo-sub{color:#9f5960}.sidebar{box-shadow:12px 0 36px rgba(0,0,0,.2)}
+.topbar{background:rgba(7,9,13,.92);backdrop-filter:blur(16px)}
+.card,.gen-section,.table-wrap,.stat-card{box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.btn-primary{background:linear-gradient(135deg,#eb2634,#b3121c);box-shadow:0 8px 18px rgba(224,24,36,.2)}
+.btn-primary:hover{background:linear-gradient(135deg,#ff3441,#cf1622)}
+.icon-mark{display:inline-flex;align-items:center;justify-content:center;width:1.15em;height:1.15em;vertical-align:-.18em;flex:0 0 auto}.icon-mark svg{width:100%;height:100%;display:block;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-icon .icon-mark{width:17px;height:17px}.logo-icon .icon-mark{width:18px;height:18px;color:#fff}.btn .icon-mark,.topbar-btn .icon-mark{width:15px;height:15px}.empty-icon .icon-mark{width:34px;height:34px}.h-icon .icon-mark{width:15px;height:15px}
+@media(max-width:768px){.topbar{height:64px;padding:0 14px;gap:8px}.topbar-title{font-size:14px}.topbar-btn{padding:7px 9px}.page{padding:14px}.page>div[style*="grid-template-columns:1fr 1fr"]{display:block!important}.page>div[style*="grid-template-columns:1fr 1fr"]>.card{margin-bottom:14px}.gen-section{padding:16px}.table-header{padding:14px}.filter-tabs{padding:0 14px;overflow-x:auto;flex-wrap:nowrap}.filter-tab{white-space:nowrap}.filter-tab:last-child{margin-right:8px}.modal{padding:18px;max-height:90vh;overflow:auto}.key-actions .btn{flex:1;justify-content:center}.stats-grid{gap:8px}.stat-card{padding:12px}.stat-value{font-size:21px}.table-wrap{overflow:hidden}#keysTableWrap{font-size:11px}th,td{padding:10px 9px}.search-wrap{min-width:100%}}
+@media(max-width:768px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  .app,.main,.page,.table-wrap{width:100%;max-width:100%;min-width:0}
+  .topbar{width:100%;max-width:100%;min-width:0;overflow:hidden}
+  .topbar-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .topbar-btn,.topbar>.btn{flex:0 0 auto;white-space:nowrap}
+  .table-header{min-width:0}
+  .table-header .table-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .table-header .search-wrap{width:100%;min-width:0;max-width:none}
+  #keysTableWrap{width:100%;max-width:100%;overflow-x:hidden}
+  #keysTableWrap table{width:100%;max-width:100%;table-layout:fixed}
+  #keysTableWrap th,#keysTableWrap td{overflow:hidden}
+  #keysTableWrap th:first-child,#keysTableWrap td:first-child{width:23%}
+  #keysTableWrap th:nth-child(2),#keysTableWrap td:nth-child(2){width:18%}
+  #keysTableWrap th:nth-child(3),#keysTableWrap td:nth-child(3){width:27%}
+  #keysTableWrap th:nth-child(6),#keysTableWrap td:nth-child(6){width:22%}
+  #keysTableWrap th:last-child,#keysTableWrap td:last-child{width:10%}
+  .key-cell{display:block;max-width:100%;overflow-wrap:anywhere}
+  .empty{padding:42px 16px}
+}
+
+/* Consulta de perfil da key */
+.lookup-profile{display:flex;align-items:flex-start;gap:14px;background:var(--surface-2);border:1px solid var(--border-light);border-radius:12px;padding:14px}
+.lookup-profile .avatar{width:84px;height:84px;border:2px solid var(--accent);box-shadow:0 0 0 4px var(--accent-glow)}
+.lookup-copy{min-width:0;flex:1}
+.lookup-name{font-size:15px;font-weight:700;margin-bottom:8px;overflow-wrap:anywhere}
+.lookup-field{font-size:12px;color:var(--text-2);line-height:1.55;overflow-wrap:anywhere}
+.lookup-field b{color:var(--text);font-weight:500}
+.lookup-field .green{color:var(--green);font-weight:700}
+.lookup-field .purple{color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:11px}
+.lookup-status{margin-top:10px;font-size:12px;font-weight:600}
+.lookup-status.ok{color:var(--green)}.lookup-status.warn{color:var(--yellow)}
+
+/* Ajustes de estabilidade visual e organização das informações do jogador */
+.nav-item,
+.filter-tab,
+.view-toggle button{
+  min-height:32px;
+  line-height:1.2;
+  box-sizing:border-box;
+}
+.nav-item{
+  min-height:40px;
+  border:1px solid transparent;
+}
+.nav-item.active{
+  border-color:var(--accent-dim);
+}
+.filter-tab{
+  border:1px solid transparent;
+  white-space:nowrap;
+}
+.filter-tab.active{
+  border-color:var(--accent-dim);
+}
+.view-toggle button{
+  border:1px solid transparent;
+}
+.view-toggle button.active{
+  border-color:var(--border-light);
+}
+
+.lookup-profile{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:16px;
+  align-items:start;
+  padding:16px;
+}
+.lookup-profile .avatar{
+  width:88px;
+  height:88px;
+}
+.lookup-copy{
+  min-width:0;
+}
+.lookup-name-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.lookup-name{
+  margin:0;
+  line-height:1.25;
+}
+.lookup-subtitle{
+  color:var(--text-3);
+  font-size:11px;
+  margin-top:4px;
+}
+.lookup-fields{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.lookup-field{
+  min-width:0;
+  padding:8px 10px;
+  background:var(--surface-1);
+  border:1px solid var(--border);
+  border-radius:8px;
+  line-height:1.35;
+}
+.lookup-field .field-label{
+  display:block;
+  color:var(--text-3);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.45px;
+  text-transform:uppercase;
+  margin-bottom:3px;
+}
+.lookup-field .field-value{
+  display:block;
+  overflow-wrap:anywhere;
+}
+.lookup-field.full{
+  grid-column:1/-1;
+}
+.lookup-status{
+  grid-column:1/-1;
+  margin-top:2px;
+  padding-top:10px;
+  border-top:1px solid var(--border);
+}
+
+.detail-player{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  margin-bottom:14px;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:12px;
+}
+.detail-player-copy{
+  min-width:0;
+}
+.detail-player-name{
+  font-size:15px;
+  font-weight:700;
+  overflow-wrap:anywhere;
+}
+.detail-section{
+  margin-top:14px;
+}
+.detail-section-title{
+  color:var(--text-3);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.65px;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.detail-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin-bottom:0;
+}
+.detail-item{
+  min-width:0;
+  padding:9px 10px;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:8px;
+}
+.detail-item.full{
+  grid-column:1/-1;
+}
+.detail-item label{
+  font-size:10px;
+  margin-bottom:4px;
+  letter-spacing:.5px;
+}
+.detail-item span{
+  display:block;
+  overflow-wrap:anywhere;
+  line-height:1.35;
+}
+@media(max-width:560px){
+  .lookup-profile{
+    grid-template-columns:1fr;
+    justify-items:center;
+    text-align:center;
+  }
+  .lookup-copy{width:100%}
+  .lookup-name-row{justify-content:center}
+  .lookup-fields{text-align:left}
+  .lookup-status{text-align:left}
+  .detail-grid{grid-template-columns:1fr}
+  .detail-item.full{grid-column:auto}
+}
+
+/* Diagnóstico técnico */
+.diagnostic-head{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  margin-bottom:10px;
+}
+.diagnostic-mark{
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--accent);
+  background:var(--accent-glow);
+  border:1px solid var(--accent-dim);
+  border-radius:12px;
+}
+.diagnostic-mark .icon-mark{width:21px;height:21px}
+.diagnostic-heading{font-size:15px;font-weight:700;letter-spacing:-.15px}
+.diagnostic-kicker{
+  margin-top:4px;
+  color:var(--text-3);
+  font:10px/1.4 'JetBrains Mono',monospace;
+  letter-spacing:.65px;
+  text-transform:uppercase;
+}
+.diagnostic-summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin:16px 0 2px;
+}
+.diagnostic-summary-item{
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:rgba(255,255,255,.015);
+}
+.diagnostic-summary-label{
+  display:block;
+  color:var(--text-3);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+.diagnostic-summary-value{
+  display:block;
+  margin-top:4px;
+  font:700 18px/1 'JetBrains Mono',monospace;
+  color:var(--text);
+}
+.diagnostic-summary-value.ok{color:var(--green)}
+.diagnostic-summary-value.warn{color:var(--yellow)}
+.diagnostic-summary-value.fail{color:var(--red)}
+.diagnostic-item{
+  min-height:58px;
+  padding:12px 14px;
+  border-radius:10px;
+  box-shadow:inset 3px 0 0 transparent;
+}
+.diagnostic-item.ok{box-shadow:inset 3px 0 0 var(--green)}
+.diagnostic-item.warn{box-shadow:inset 3px 0 0 var(--yellow)}
+.diagnostic-item.fail{box-shadow:inset 3px 0 0 var(--red)}
+.diagnostic-icon{
+  width:22px;
+  min-width:22px;
+  height:22px;
+  line-height:20px;
+  border:1px solid currentColor;
+  border-radius:50%;
+}
+.diagnostic-item b{font-size:12.5px;letter-spacing:.05px}
+.diagnostic-detail{font-size:12px}
+.diagnostic-time{font:10px 'JetBrains Mono',monospace}
+
+/* Registro de chaves: evita esmagamento e quebra vertical no mobile. */
+.key-cell-wrap{min-width:0}
+.key-cell-value{
+  display:block;
+  max-width:190px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.key-cell-meta{
+  display:block;
+  margin-top:4px;
+  color:var(--text-3);
+  font:10px 'JetBrains Mono',monospace;
+}
+.mobile-list-note{
+  display:none;
+  color:var(--text-3);
+  font-size:10px;
+}
+@media(max-width:768px){
+  .diagnostic-head{align-items:center}
+  .diagnostic-head .btn{margin-left:auto;white-space:nowrap}
+  .diagnostic-summary{grid-template-columns:repeat(3,1fr);gap:6px}
+  .diagnostic-summary-item{padding:9px 8px}
+  .diagnostic-summary-value{font-size:16px}
+  .diagnostic-time{display:none}
+  .mobile-list-note{display:block}
+  #keysTableWrap{display:none!important}
+  #keysCards{
+    display:grid!important;
+    grid-template-columns:1fr;
+    gap:10px;
+    padding:12px!important;
+  }
+  #page-keys .view-toggle{display:none}
+  #page-keys .table-header .table-title{width:auto}
+  .ku-card{padding:14px}
+  .ku-card-key{
+    padding:9px 10px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:11px;
+    line-height:1.45;
+  }
+}
+@media(max-width:420px){
+  .diagnostic-head{gap:10px}
+  .diagnostic-mark{width:36px;height:36px;flex-basis:36px}
+  .diagnostic-head .btn{padding:9px 10px;font-size:12px}
+  .diagnostic-heading{font-size:14px}
+}
+
+/* Autenticação local por conta */
+.auth-screen{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:
+    radial-gradient(circle at 18% 10%,rgba(224,24,36,.16),transparent 34%),
+    radial-gradient(circle at 88% 90%,rgba(224,24,36,.08),transparent 30%),
+    var(--bg);
+}
+.auth-card{
+  width:100%;
+  max-width:430px;
+  padding:28px;
+  background:rgba(16,20,27,.94);
+  border:1px solid var(--border);
+  border-radius:18px;
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+}
+.auth-brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:28px;
+}
+.auth-brand img{
+  width:50px;
+  height:50px;
+  border-radius:12px;
+  object-fit:cover;
+  border:1px solid var(--accent-dim);
+  box-shadow:0 8px 20px rgba(224,24,36,.2);
+}
+.auth-brand-mark{
+  width:50px;
+  height:50px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  border-radius:12px;
+  color:#fff;
+  font-size:24px;
+  font-weight:800;
+  background:linear-gradient(145deg,#ee2634,#8e0e17);
+}
+.auth-brand-title{font-size:18px;font-weight:700}
+.auth-brand-sub{font-size:11px;color:var(--text-3);margin-top:3px}
+.auth-heading{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
+.auth-description{font-size:13px;color:var(--text-2);line-height:1.5;margin-bottom:22px}
+.auth-form{display:flex;flex-direction:column;gap:14px}
+.auth-field{display:flex;flex-direction:column;gap:7px}
+.auth-field label{font-size:12px;color:var(--text-2);font-weight:600}
+.auth-field input{
+  width:100%;
+  padding:12px 13px;
+  background:#0b1020;
+  color:var(--text);
+  border:1px solid var(--border-light);
+  border-radius:9px;
+  font:14px inherit;
+  outline:none;
+  transition:.15s;
+}
+.auth-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.auth-actions{display:flex;gap:10px;margin-top:4px}
+.auth-actions .btn{flex:1;justify-content:center;min-height:42px}
+.auth-error{
+  display:none;
+  padding:10px 12px;
+  color:#ffb4ba;
+  background:var(--red-dim);
+  border:1px solid var(--red-dim);
+  border-radius:8px;
+  font-size:12px;
+  line-height:1.4;
+}
+.auth-error.show{display:block}
+.auth-switch{
+  margin-top:18px;
+  text-align:center;
+  color:var(--text-3);
+  font-size:12px;
+}
+.auth-switch button{margin-left:4px}
+.account-chip{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--text-2);
+  font-size:12px;
+  white-space:nowrap;
+}
+.account-chip .icon-mark{color:var(--accent);width:14px;height:14px}
+.connection-panel{
+  display:flex;
+  align-items:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.connection-panel .setting-row{flex:1;min-width:220px}
+.connection-status{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-height:34px;
+  margin-top:12px;
+  padding:9px 11px;
+  border-radius:8px;
+  font-size:12px;
+  border:1px solid var(--border);
+}
+.connection-status.connected{color:var(--green);background:var(--green-dim);border-color:var(--green-dim)}
+.connection-status.disconnected{color:var(--text-2);background:var(--surface-2)}
+.connection-status.error{color:var(--red);background:var(--red-dim);border-color:var(--red-dim)}
+@media(max-width:520px){
+  .auth-screen{padding:14px}
+  .auth-card{padding:22px 18px}
+  .auth-actions{flex-direction:column}
+  .account-chip{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeMobile()"></div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- Autenticação -->
+<section class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <img src="icon_1789060417670.png" alt="Night Cheats" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="auth-brand-mark">N</div>
+      <div>
+        <div class="auth-brand-title">NIGHT Vault</div>
+        <div class="auth-brand-sub">Gerenciador de Keys</div>
+      </div>
+    </div>
+
+    <div id="authLoginView">
+      <h1 class="auth-heading">Entrar</h1>
+      <p class="auth-description">Acesse o painel do seu sistema de Keys.</p>
+      <form class="auth-form" onsubmit="handleLogin(event)">
+        <div class="auth-field">
+          <label for="loginUsername">Usuário</label>
+          <input id="loginUsername" type="text" autocomplete="username" placeholder="Digite seu usuário" maxlength="32" required>
+        </div>
+        <div class="auth-field">
+          <label for="loginPassword">Senha</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
+        </div>
+        <div class="auth-error" id="loginError"></div>
+        <div class="auth-actions">
+          <button class="btn btn-primary" type="submit">Entrar</button>
+          <button class="btn btn-outline" type="button" onclick="showAuthView('signup')">Criar conta</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="authSignupView" style="display:none">
+      <h1 class="auth-heading">Criar conta</h1>
+      <p class="auth-description">Crie uma conta local para manter seu painel e seu Bin separados dos demais usuários.</p>
+      <form class="auth-form" onsubmit="handleSignup(event)">
+        <div class="auth-field">
+          <label for="signupUsername">Nome de usuário</label>
+          <input id="signupUsername" type="text" autocomplete="username" placeholder="Escolha um usuário" maxlength="32" required>
+        </div>
+        <div class="auth-field">
+          <label for="signupPassword">Senha</label>
+          <input id="signupPassword" type="password" autocomplete="new-password" placeholder="Crie uma senha" minlength="4" required>
+        </div>
+        <div class="auth-field">
+          <label for="signupPasswordConfirm">Confirmar senha</label>
+          <input id="signupPasswordConfirm" type="password" autocomplete="new-password" placeholder="Repita a senha" minlength="4" required>
+        </div>
+        <div class="auth-error" id="signupError"></div>
+        <div class="auth-actions">
+          <button class="btn btn-primary" type="submit">Criar conta</button>
+          <button class="btn btn-outline" type="button" onclick="showAuthView('login')">Voltar para entrar</button>
+        </div>
+      </form>
+    </div>
+    <div class="auth-switch">Os dados da conta ficam neste dispositivo.</div>
+  </div>
+</section>
+
+<!-- Modal confirm -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Confirmar ação</h3>
+    <p id="modalMsg"></p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-danger" id="modalConfirm">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-bg" id="detailModal">
+  <div class="modal" style="max-width:500px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3>Detalhes da Key</h3>
+      <button class="icon-btn" onclick="document.getElementById('detailModal').classList.remove('show')"><span class="icon-mark" data-icon="x" aria-hidden="true"></span></button>
+    </div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<div class="app" id="appShell" style="display:none">
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><span class="icon-mark" data-icon="key" aria-hidden="true"></span></div>
+      <div>
+        <div class="logo-text">NIGHT Vault</div>
+        <div class="logo-sub">Manager</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-group">
+        <div class="nav-label">Principal</div>
+        <button class="nav-item active" onclick="showPage('dashboard',this)">
+          <span class="nav-icon"><span class="icon-mark" data-icon="grid" aria-hidden="true"></span></span> Dashboard
+        </button>
+        <button class="nav-item" onclick="showPage('generate',this)">
+          <span class="nav-icon"><span class="icon-mark" data-icon="zap" aria-hidden="true"></span></span> Gerar Key
+        </button>
+        <button class="nav-item" onclick="showPage('keys',this)">
+          <span class="nav-icon"><span class="icon-mark" data-icon="layers" aria-hidden="true"></span></span> Chaves e usuários
+          <span class="nav-badge green" id="activeCount">0</span>
+        </button>
+        <button class="nav-item" onclick="showPage('blacklist',this)">
+          <span class="nav-icon"><span class="icon-mark" data-icon="ban" aria-hidden="true"></span></span> Blacklist
+          <span class="nav-badge" id="blacklistCount">0</span>
+        </button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Sistema</div>
+        <button class="nav-item" onclick="showPage('history',this)">
+          <span class="nav-icon"><span class="icon-mark" data-icon="clipboard" aria-hidden="true"></span></span> Histórico
+        </button>
+        <button class="nav-item" onclick="showPage('settings',this)">
+          <span class="nav-icon"><span class="icon-mark" data-icon="settings" aria-hidden="true"></span></span> Configurações
+        </button>
+         <button class="nav-item" onclick="showPage('diagnostics',this)">
+           <span class="nav-icon"><span class="icon-mark" data-icon="warning" aria-hidden="true"></span></span> Diagnóstico
+         </button>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div style="font-size:11px;color:var(--text-3);text-align:center">NIGHT Vault v2.1 • Local e seguro</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="hamburger" onclick="toggleMobile()"><span class="icon-mark" data-icon="menu" aria-hidden="true"></span></button>
+      <span class="topbar-title" id="pageTitle">Dashboard</span>
+      <div class="account-chip"><span class="icon-mark" data-icon="user" aria-hidden="true"></span><span id="currentUsername">—</span></div>
+      <button class="topbar-btn" onclick="refreshAll()"><span class="icon-mark" data-icon="refresh" aria-hidden="true"></span> Atualizar</button>
+      <button class="topbar-btn" onclick="logout()">Sair</button>
+      <button class="btn btn-primary btn-lg" onclick="showPage('generate',null);window.scrollTo(0,0)" style="font-size:13px;padding:8px 16px"><span class="icon-mark" data-icon="plus" aria-hidden="true"></span> Gerar Key</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="page" id="page-dashboard">
+      <div class="stats-grid" id="statsGrid"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text-2)">Criações por dia (7 dias)</div>
+          <div class="mini-chart" id="miniChart"></div>
+          <div class="chart-labels" id="chartLabels"></div>
+        </div>
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text-2)">Status das Keys</div>
+          <div id="statusDonut" style="padding:8px 0"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text-2)">Keys recentes</div>
+        <div id="recentKeys"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text-2)"><span class="icon-mark" data-icon="clock" aria-hidden="true"></span> Keys próximas de expirar</div>
+          <div id="expiringSoon"></div>
+        </div>
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text-2)"><span class="icon-mark" data-icon="ban" aria-hidden="true"></span> Últimos bloqueios</div>
+          <div id="recentBans"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generate -->
+    <div class="page" id="page-generate" style="display:none">
+      <div class="gen-section">
+        <div class="gen-header">
+          <div class="gen-title"><span class="icon-mark" data-icon="key" aria-hidden="true"></span> Nova Key</div>
+        </div>
+        <div class="banner banner-warn" id="generateConnectionNotice" style="margin-bottom:16px">
+          <span class="icon-mark" data-icon="plug" aria-hidden="true"></span>
+          Conecte e verifique um Bin ID em Configurações antes de gerar uma key.
+        </div>
+        <div class="gen-options">
+          <div class="gen-field">
+            <label>Duração</label>
+            <select id="durationType">
+              <option value="30s">30 segundos</option>
+              <option value="5m">5 minutos</option>
+              <option value="30m" selected>30 minutos</option>
+              <option value="1h">1 hora</option>
+              <option value="6h">6 horas</option>
+              <option value="1d">1 dia</option>
+              <option value="7d">7 dias</option>
+              <option value="30d">30 dias</option>
+              <option value="perm">Permanente</option>
+            </select>
+          </div>
+          <div class="gen-field">
+            <label>Máximo de usos</label>
+            <select id="maxUses">
+              <option value="0">Ilimitado</option>
+              <option value="1">Uso único</option>
+              <option value="5">5 usos</option>
+              <option value="10">10 usos</option>
+              <option value="50">50 usos</option>
+              <option value="100">100 usos</option>
+            </select>
+          </div>
+          <div class="gen-field">
+            <label>Prefixo</label>
+            <input type="text" id="keyPrefix" value="KEY" maxlength="8" style="text-transform:uppercase">
+          </div>
+          <div class="gen-field">
+            <label>Criada por</label>
+            <input type="text" id="createdBy" placeholder="Admin" value="Admin">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg" id="genBtn" onclick="generateKey()" style="width:100%;justify-content:center">
+          <span class="icon-mark" data-icon="zap" aria-hidden="true"></span> Gerar Key
+        </button>
+
+        <div class="key-display" id="keyDisplay">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:12px;color:var(--text-3);font-weight:500">KEY GERADA</span>
+            <span class="status-badge badge-green"><span class="dot dot-green"></span>Ativa</span>
+          </div>
+          <div class="key-value" id="generatedKey"></div>
+          <div class="key-meta" id="keyMeta"></div>
+          <div class="key-actions">
+            <button class="btn btn-primary" onclick="copyKey(this)"><span class="icon-mark" data-icon="clipboard" aria-hidden="true"></span> Copiar</button>
+            <button class="btn btn-green" onclick="generateKey()"><span class="icon-mark" data-icon="refresh" aria-hidden="true"></span> Nova key</button>
+            <button class="btn btn-danger" onclick="confirmDelete(currentKey)"><span class="icon-mark" data-icon="trash" aria-hidden="true"></span> Excluir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="previewCard" style="display:none">
+        <div class="section-title">Preview da expiração</div>
+        <div style="font-size:28px;font-weight:700;letter-spacing:-1px;margin:8px 0" id="previewCountdown">--:--:--</div>
+        <div class="progress-bar"><div class="progress-fill fill-green" id="previewProgress" style="width:100%"></div></div>
+      </div>
+    </div>
+
+    <!-- Keys & Usuários -->
+    <div class="page" id="page-keys" style="display:none">
+      <div class="card" style="margin-bottom:16px">
+        <div class="section-title"><span class="icon-mark" data-icon="key" aria-hidden="true"></span> Consultar chave</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="keyLookupInput" type="text" placeholder="Cole a key para consultar..." style="flex:1;min-width:220px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:14px;font-family:'JetBrains Mono',monospace;outline:none">
+          <button class="btn btn-primary" onclick="lookupKey()"><span class="icon-mark" data-icon="search" aria-hidden="true"></span> Consultar</button>
+        </div>
+        <div id="keyLookupResult" style="margin-top:12px;display:none"></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title"><span class="icon-mark" data-icon="layers" aria-hidden="true"></span> Registro de chaves</span>
+          <span class="mobile-list-note">Visualização compacta para telas menores</span>
+          <div class="search-wrap">
+            <span class="search-icon"><span class="icon-mark" data-icon="search" aria-hidden="true"></span></span>
+            <input type="text" placeholder="Buscar key, jogador, HWID..." id="searchInput" oninput="renderTable()">
+          </div>
+          <div class="view-toggle">
+            <button id="viewBtnTable" class="active" onclick="setKuView('table')"><span class="icon-mark" data-icon="menu" aria-hidden="true"></span> Tabela</button>
+            <button id="viewBtnCards" onclick="setKuView('cards')"><span class="icon-mark" data-icon="grid" aria-hidden="true"></span> Cards</button>
+          </div>
+          <button class="topbar-btn" onclick="showPage('generate',null)"><span class="icon-mark" data-icon="plus" aria-hidden="true"></span> Gerar</button>
+        </div>
+        <div style="padding:8px 20px;border-bottom:1px solid var(--border);display:flex;gap:4px;flex-wrap:wrap">
+          <button class="filter-tab active" onclick="setFilter('all',this)">Todas</button>
+          <button class="filter-tab" onclick="setFilter('active',this)">Ativas</button>
+          <button class="filter-tab" onclick="setFilter('expiring',this)">Expirando</button>
+          <button class="filter-tab" onclick="setFilter('expired',this)">Expiradas</button>
+          <button class="filter-tab" onclick="setFilter('revoked',this)">Revogadas</button>
+          <button class="filter-tab" onclick="setFilter('unused',this)">Não utilizadas</button>
+          <button class="filter-tab" onclick="setFilter('used',this)">Com usuário</button>
+        </div>
+        <div style="overflow-x:auto" id="keysTableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Chave</th>
+                <th>Status</th>
+                <th>Usuário</th>
+                <th>Dispositivo</th>
+                <th>Emissão</th>
+                <th>Validade</th>
+                <th>Usos</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="keysTable"></tbody>
+          </table>
+        </div>
+        <div class="ku-grid" id="keysCards" style="display:none;padding:16px 20px"></div>
+        <div id="emptyState" class="empty" style="display:none">
+          <div class="empty-icon"><span class="icon-mark" data-icon="layers" aria-hidden="true"></span></div>
+          <h4>Nenhuma chave encontrada</h4>
+          <p>Ajuste os filtros ou emita uma nova chave.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blacklist -->
+    <div class="page" id="page-blacklist" style="display:none">
+      <div class="card" style="margin-bottom:16px">
+        <div class="section-title"><span class="icon-mark" data-icon="ban" aria-hidden="true"></span> Adicionar bloqueio</div>
+        <div class="gen-options" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="gen-field">
+            <label>Tipo</label>
+            <select id="bl-type">
+              <option value="hwids">HWID</option>
+              <option value="userIds">User ID</option>
+              <option value="accounts">Conta / Nome</option>
+            </select>
+          </div>
+          <div class="gen-field">
+            <label>Valor</label>
+            <input type="text" id="bl-value" placeholder="Ex: DEV-ABC12345-XYZ">
+          </div>
+          <div class="gen-field">
+            <label>Administrador</label>
+            <input type="text" id="bl-admin" placeholder="Admin" value="Admin">
+          </div>
+        </div>
+        <div class="gen-field" style="margin-bottom:14px">
+          <label>Motivo</label>
+          <input type="text" id="bl-reason" placeholder="Ex: Compartilhamento de key / Cheat externo">
+        </div>
+        <button class="btn btn-danger btn-lg" onclick="addBlacklistEntry()"><span class="icon-mark" data-icon="ban" aria-hidden="true"></span> Banir</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">Entradas na blacklist</span>
+          <span style="font-size:11px;color:var(--text-3)">Os registros são permanentes</span>
+          <div class="search-wrap">
+            <span class="search-icon"><span class="icon-mark" data-icon="search" aria-hidden="true"></span></span>
+            <input type="text" placeholder="Pesquisar..." id="blSearchInput" oninput="renderBlacklist()">
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Tipo</th><th>Valor</th><th>Motivo</th><th>Data</th><th>Admin</th><th>Status</th><th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="blacklistTable"></tbody>
+          </table>
+        </div>
+        <div id="blEmptyState" class="empty" style="display:none">
+          <div class="empty-icon"><span class="icon-mark" data-icon="ban" aria-hidden="true"></span></div>
+          <h4>Nenhum bloqueio cadastrado</h4>
+          <p>Adicione HWIDs, User IDs ou contas acima</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="page" id="page-history" style="display:none">
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title"><span class="icon-mark" data-icon="clipboard" aria-hidden="true"></span> Histórico de ações</span>
+          <button class="topbar-btn" onclick="clearHistory()"><span class="icon-mark" data-icon="trash" aria-hidden="true"></span> Limpar</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+        <div id="historyEmpty" class="empty" style="display:none">
+          <div class="empty-icon"><span class="icon-mark" data-icon="clipboard" aria-hidden="true"></span></div>
+          <h4>Sem histórico</h4>
+          <p>As ações aparecerão aqui</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="page" id="page-settings" style="display:none">
+      <div class="card" style="margin-bottom:16px">
+        <div class="section-title"><span class="icon-mark" data-icon="database" aria-hidden="true"></span> Conexão do banco de Keys</div>
+        <p style="font-size:13px;color:var(--text-2);line-height:1.5;margin-bottom:14px">
+          Cada conta possui seu próprio Bin ID. Informe o ID do JSONBin e verifique a conexão antes de usar o banco remoto.
+        </p>
+        <div class="connection-panel">
+          <div class="setting-row">
+            <label for="cfg-binid">Bin ID</label>
+            <div style="display:flex;gap:8px">
+              <input type="password" id="cfg-binid" placeholder="Digite o ID do seu Bin" autocomplete="off" style="flex:1">
+              <button class="icon-btn" type="button" id="toggleBinVisibilityBtn" onclick="toggleBinVisibility()" title="Mostrar Bin ID" aria-label="Mostrar Bin ID"><span class="icon-mark" data-icon="eye" aria-hidden="true"></span></button>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="connectBinBtn" onclick="connectBin()"><span class="icon-mark" data-icon="plug" aria-hidden="true"></span> Validar conexão</button>
+        </div>
+        <div class="connection-status disconnected" id="binConnectionStatus">
+          <span class="dot dot-gray"></span> Não conectado
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="section-title"><span class="icon-mark" data-icon="settings" aria-hidden="true"></span> Configurações do sistema</div>
+        <div class="settings-grid">
+          <div class="setting-row">
+            <label>Nome do sistema</label>
+            <input type="text" id="cfg-name" value="NIGHT Vault">
+          </div>
+          <div class="setting-row">
+            <label>Prefixo padrão</label>
+            <input type="text" id="cfg-prefix" value="KEY" maxlength="8">
+          </div>
+          <div class="setting-row">
+            <label>Duração padrão</label>
+            <select id="cfg-duration">
+              <option value="30m">30 minutos</option>
+              <option value="1h">1 hora</option>
+              <option value="1d" selected>1 dia</option>
+              <option value="7d">7 dias</option>
+              <option value="30d">30 dias</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <label>Máximo de usos padrão</label>
+            <select id="cfg-maxuses">
+              <option value="0" selected>Ilimitado</option>
+              <option value="1">Uso único</option>
+              <option value="10">10 usos</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn btn-primary" onclick="saveSettings()"><span class="icon-mark" data-icon="save" aria-hidden="true"></span> Salvar configurações</button>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="section-title"><span class="icon-mark" data-icon="file-text" aria-hidden="true"></span> Banco de dados configurado</div>
+        <p style="font-size:13px;color:var(--text-2);line-height:1.5;margin-bottom:12px">
+          Use este modelo para criar ou configurar o conteúdo do seu Bin. Ele contém a estrutura esperada pelo NIGHT Vault.
+        </p>
+        <div class="code-box" id="databaseTemplatePreview"></div>
+        <button class="btn btn-outline" style="margin-top:12px" onclick="copyDatabaseTemplate(this)">
+          <span class="icon-mark" data-icon="clipboard" aria-hidden="true"></span> Copiar modelo
+        </button>
+      </div>
+      <div class="card" style="border-color:var(--red-dim)">
+        <div class="section-title" style="color:var(--red)"><span class="icon-mark" data-icon="warning" aria-hidden="true"></span> Zona de perigo</div>
+        <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">Ações irreversíveis — prossiga com cuidado.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-danger" onclick="confirmAction('Excluir todas as keys expiradas?','Isso remove permanentemente todas as keys expiradas.',deleteExpired)">Excluir expiradas</button>
+          <button class="btn btn-danger" onclick="confirmAction('Revogar todas as keys ativas?','Isso revogará todas as keys ativas imediatamente.',revokeAll)">Revogar todas</button>
+          <button class="btn btn-danger" onclick="confirmAction('Apagar TUDO?','Isso apaga todas as keys e histórico. Ação irreversível.',nukeAll)">Apagar tudo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagnostics -->
+    <div class="page" id="page-diagnostics" style="display:none">
+      <div class="card" style="margin-bottom:16px">
+        <div class="diagnostic-head">
+          <div class="diagnostic-mark"><span class="icon-mark" data-icon="flask" aria-hidden="true"></span></div>
+          <div style="flex:1;min-width:0">
+            <div class="diagnostic-heading">Diagnóstico de integridade</div>
+            <div class="diagnostic-kicker">NIGHT VAULT / RUNTIME CHECK</div>
+          </div>
+          <button class="btn btn-primary" onclick="runDiagnostics()"><span class="icon-mark" data-icon="refresh" aria-hidden="true"></span> Executar diagnóstico</button>
+        </div>
+        <p style="font-size:13px;color:var(--text-2);line-height:1.5">Analisa o ambiente do navegador, a sessão atual, a persistência dos dados e a integridade das chaves. Nenhum registro é alterado durante o diagnóstico.</p>
+        <div id="diagnosticSummary" style="margin-top:14px"></div>
+        <div class="diagnostic-list" id="diagnosticList"></div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="section-title" style="color:var(--red)"><span class="icon-mark" data-icon="x" aria-hidden="true"></span> Último erro registrado</div>
+        <div id="diagnosticError" class="error-box" style="display:none"></div>
+        <div id="diagnosticNoError" style="font-size:13px;color:var(--text-2)">Nenhum erro registrado nesta sessão.</div>
+        <button class="btn btn-outline" style="margin-top:12px" onclick="clearLastError()">Limpar mensagem</button>
+      </div>
+      <div class="card">
+        <div class="section-title"><span class="icon-mark" data-icon="database" aria-hidden="true"></span> Estado do banco local</div>
+        <div id="diagnosticStorage" class="code-box">Ainda não verificado.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const iconPaths = {
+  key:'<path d="M21 2l-9.6 9.6"/><circle cx="7.5" cy="16.5" r="4.5"/><path d="M11 13l3 3m-1-5 2 2m-1-5 2 2"/>', zap:'<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>', layers:'<path d="M12 2 3 7l9 5 9-5-9-5z"/><path d="m3 12 9 5 9-5M3 17l9 5 9-5"/>',
+  ban:'<circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/>', plug:'<path d="M9 7V3m6 4V3M7 7h10v3a5 5 0 0 1-10 0V7zm5 8v6"/>', clipboard:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M8 9h8M8 13h6"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-2.5V20a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1-1.8-1.8.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H4v-2.5h.2a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 1.8-1.8.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V4h2.5v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v2.5h-.2a1.7 1.7 0 0 0-1.6 1z"/>',
+  database:'<ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v7c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 12v7c0 1.7 3.1 3 7 3s7-1.3 7-3v-7"/>',
+  menu:'<path d="M4 6h16M4 12h16M4 18h16"/>', refresh:'<path d="M20 11a8 8 0 0 0-14.8-4L4 9"/><path d="M4 4v5h5M4 13a8 8 0 0 0 14.8 4L20 15"/><path d="M20 20v-5h-5"/>', grid:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>',
+  search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>', clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', timer:'<path d="M9 2h6M12 5v2"/><circle cx="12" cy="14" r="7"/><path d="M12 11v3l2 1"/>', warning:'<path d="m12 3 9 17H3L12 3z"/><path d="M12 9v4m0 3h.01"/>', 'shield-off':'<path d="m4 4 16 16M19 13V6l-7-3-7 3v6c0 5 3 8 7 10 1-.5 1-1 1.8"/>',
+  check:'<path d="m5 12 4 4L19 6"/>', x:'<path d="m6 6 12 12M18 6 6 18"/>', slash:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6 18.4 18.4"/>', trash:'<path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', save:'<path d="M5 3h12l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>', hash:'<path d="M10 3 8 21M16 3l-2 18M4 9h17M3 15h17"/>', pin:'<path d="m15 4 5 5-4 1-4 4 1 4-2 2-2-5-4-2 2-2 4 1 4-4 1-4z"/>', 'file-text':'<path d="M6 3h9l3 3v15H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>', eye:'<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2"/>', user:'<circle cx="12" cy="8" r="3"/><path d="M5 21c.7-4 3-6 7-6s6.3 2 7 6"/>', 'trash-2':'<path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', flask:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M8 16h8"/>', gamepad:'<path d="M7 9h10a5 5 0 0 1 4 8l-1 1a3 3 0 0 1-5-1l-1-2H10l-1 2a3 3 0 0 1-5 1l-1-1a5 5 0 0 1 4-8z"/><path d="M7 12v4m-2-2h4M16 14h.01m3-2h.01"/>'
+};
+function renderUiIcons(root = document) {
+  root.querySelectorAll('.icon-mark[data-icon]').forEach((el) => {
+    if (el.dataset.rendered === '1') return;
+    el.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + (iconPaths[el.dataset.icon] || iconPaths.grid) + '</svg>';
+    el.dataset.rendered = '1';
+  });
+}
+renderUiIcons();
+new MutationObserver(() => renderUiIcons()).observe(document.body, { childList: true, subtree: true });
+
+// ============ DATA STORE ============
+const ACCOUNTS_STORAGE_KEY = 'night_vault_accounts_v1';
+const SESSION_STORAGE_KEY = 'night_vault_session_v1';
+const VAULT_API_PATH = '/.netlify/functions/vault-db';
+let currentAccount = null;
+
+function normalizeUsername(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function lsKey(name) {
+  const account = currentAccount ? normalizeUsername(currentAccount.username) : 'guest';
+  return `night_vault_${encodeURIComponent(account)}_${name}`;
+}
+
+function currentBinId() {
+  return String(currentAccount?.binId || '').trim();
+}
+
+function vaultDbUrl(binId = currentBinId()) {
+  return binId ? `${VAULT_API_PATH}?binId=${encodeURIComponent(binId)}` : '';
+}
+
+async function vaultDbRequest(binId = currentBinId(), options = {}) {
+  if (!binId) throw new Error('Nenhum Bin ID foi configurado.');
+  const headers = { ...(options.headers || {}) };
+  const response = await fetch(vaultDbUrl(binId), {
+    ...options,
+    headers,
+    cache: 'no-store',
+    credentials: 'same-origin'
+  });
+  return response;
+}
+
+function readAccounts() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY) || '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveAccounts(accounts) {
+  localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
+}
+
+function saveCurrentAccount() {
+  if (!currentAccount) return;
+  const accounts = readAccounts();
+  accounts[normalizeUsername(currentAccount.username)] = currentAccount;
+  saveAccounts(accounts);
+}
+
+function setConnectionStatus(type, message) {
+  const el = document.getElementById('binConnectionStatus');
+  if (!el) return;
+  const icon = type === 'connected' ? 'dot-green' : type === 'error' ? 'dot-red' : 'dot-gray';
+  el.className = `connection-status ${type}`;
+  el.innerHTML = `<span class="dot ${icon}"></span> ${escapeHtml(message)}`;
+  updateGenerationAccess();
+}
+
+function updateGenerationAccess() {
+  const connected = Boolean(currentAccount && currentBinId() && databaseState?.connected);
+  const button = document.getElementById('genBtn');
+  const notice = document.getElementById('generateConnectionNotice');
+  if (button && button.dataset.generating !== '1') {
+    button.disabled = !connected;
+    button.title = connected ? 'Gerar uma nova key' : 'Conecte um Bin ID antes de gerar uma key';
+    button.style.opacity = connected ? '1' : '.55';
+    button.style.cursor = connected ? 'pointer' : 'not-allowed';
+  }
+  if (notice) {
+    notice.style.display = connected ? 'none' : 'flex';
+  }
+}
+
+function simplePasswordHash(value) {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `fallback-${(hash >>> 0).toString(16)}`;
+}
+
+async function hashPassword(username, password) {
+  const value = `night-vault-v1:${normalizeUsername(username)}:${password}`;
+  try {
+    if (window.crypto?.subtle && window.TextEncoder) {
+      const buffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+      return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+  } catch (e) {
+    // O fallback mantém o modo local funcionando em navegadores mais antigos.
+  }
+  return simplePasswordHash(value);
+}
+
+function showAuthError(id, message) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = message;
+  el.classList.toggle('show', Boolean(message));
+}
+
+function showAuthView(view) {
+  const login = document.getElementById('authLoginView');
+  const signup = document.getElementById('authSignupView');
+  if (!login || !signup) return;
+  login.style.display = view === 'login' ? 'block' : 'none';
+  signup.style.display = view === 'signup' ? 'block' : 'none';
+  showAuthError('loginError', '');
+  showAuthError('signupError', '');
+  const focusId = view === 'login' ? 'loginUsername' : 'signupUsername';
+  setTimeout(() => document.getElementById(focusId)?.focus(), 0);
+}
+
+async function handleSignup(event) {
+  event.preventDefault();
+  showAuthError('signupError', '');
+  const username = normalizeUsername(document.getElementById('signupUsername').value);
+  const password = document.getElementById('signupPassword').value;
+  const confirm = document.getElementById('signupPasswordConfirm').value;
+  if (!/^[a-z0-9_ -]{3,32}$/i.test(username)) {
+    showAuthError('signupError', 'Use de 3 a 32 caracteres: letras, números, espaço, _ ou -.');
+    return;
+  }
+  if (password.length < 4) {
+    showAuthError('signupError', 'A senha precisa ter pelo menos 4 caracteres.');
+    return;
+  }
+  if (password !== confirm) {
+    showAuthError('signupError', 'As senhas não conferem.');
+    return;
+  }
+  const accounts = readAccounts();
+  if (accounts[username]) {
+    showAuthError('signupError', 'Esse usuário já existe neste dispositivo.');
+    return;
+  }
+  accounts[username] = {
+    username,
+    passwordHash: await hashPassword(username, password),
+    binId: '',
+    createdAt: Date.now()
+  };
+  saveAccounts(accounts);
+  // A conta recém-criada já inicia a sessão, sem exigir um segundo login.
+  await enterAccount(accounts[username]);
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  showAuthError('loginError', '');
+  const username = normalizeUsername(document.getElementById('loginUsername').value);
+  const password = document.getElementById('loginPassword').value;
+  const account = readAccounts()[username];
+  if (!account) {
+    showAuthError('loginError', 'Usuário ou senha inválidos.');
+    return;
+  }
+  const passwordHash = await hashPassword(username, password);
+  if (passwordHash !== account.passwordHash) {
+    showAuthError('loginError', 'Usuário ou senha inválidos.');
+    return;
+  }
+  await enterAccount(account);
+}
+
+async function enterAccount(account) {
+  currentAccount = { ...account };
+  localStorage.setItem(SESSION_STORAGE_KEY, normalizeUsername(account.username));
+  history = readStoredJson(lsKey('kv_history'), []);
+  if (!Array.isArray(history)) history = [];
+  keys = {};
+  sysConfig = { systemName: 'NIGHT Vault', prefix: 'KEY', keyLength: 16, defaultMaxUses: 1, defaultDuration: 86400 };
+  blacklist = { hwids: [], userIds: [], accounts: [] };
+  apiLogs = [];
+  remoteKeysField = 'keys';
+  databaseState = { connected: false, message: 'Configure um Bin ID para conectar.', syncedAt: null };
+  lastError = null;
+  diagnosticResults = [];
+
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appShell').style.display = 'flex';
+  document.getElementById('currentUsername').textContent = account.username;
+  const binInput = document.getElementById('cfg-binid');
+  if (binInput) binInput.value = account.binId || '';
+  setConnectionStatus(account.binId ? 'disconnected' : 'disconnected', account.binId ? 'Não verificado nesta sessão' : 'Não conectado');
+  await loadKeys();
+  const cfgName = document.getElementById('cfg-name');
+  const cfgPrefix = document.getElementById('cfg-prefix');
+  const cfgDuration = document.getElementById('cfg-duration');
+  const cfgMaxUses = document.getElementById('cfg-maxuses');
+  if (cfgName) cfgName.value = sysConfig.systemName || 'NIGHT Vault';
+  if (cfgPrefix) cfgPrefix.value = sysConfig.prefix || 'KEY';
+  if (cfgDuration) {
+    const durationType = Object.keys(durMap).find(type => durMap[type] === sysConfig.defaultDuration);
+    if (durationType) cfgDuration.value = durationType;
+  }
+  if (cfgMaxUses) cfgMaxUses.value = String(sysConfig.defaultMaxUses ?? 0);
+  renderDatabaseTemplate();
+  updateGenerationAccess();
+  updateDashboard();
+  updateCounters();
+  renderHistory();
+  renderBlacklist();
+  runDiagnostics(true);
+}
+
+function logout() {
+  localStorage.removeItem(SESSION_STORAGE_KEY);
+  currentAccount = null;
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('loginPassword').value = '';
+  showAuthView('login');
+}
+
+let keys = {};
+let sysConfig = { systemName: 'NIGHT Vault', prefix: 'KEY', keyLength: 16, defaultMaxUses: 1, defaultDuration: 86400 };
+let blacklist = { hwids: [], userIds: [], accounts: [] };
+let apiLogs = [];
+let remoteKeysField = 'keys';
+let databaseState = { connected: false, message: 'Ainda não sincronizado.', syncedAt: null };
+let lastError = null;
+let diagnosticResults = [];
+function recordError(context, error) {
+  lastError = {
+    context,
+    message: error && error.message ? error.message : String(error || 'Erro desconhecido'),
+    time: Date.now()
+  };
+  renderDiagnostics();
+}
+function readStoredJson(key, fallback) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return fallback;
+  try { return JSON.parse(raw); }
+  catch (e) {
+    recordError(`Leitura de ${key}`, new Error('O conteúdo salvo não é um JSON válido. Os dados inválidos foram ignorados.'));
+    return fallback;
+  }
+}
+let history = readStoredJson(lsKey('kv_history'), []);
+if (!Array.isArray(history)) history = [];
+let currentFilter = 'all';
+let currentKey = null;
+let countdownInterval = null;
+let kuView = 'table';
+const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#26263a"/><circle cx="50" cy="38" r="18" fill="#4a4a66"/><ellipse cx="50" cy="92" rx="30" ry="24" fill="#4a4a66"/></svg>');
+const avatarCache = {};
+const robloxProfileCache = {};
+
+const durMap = {
+  '30s': 30, '5m': 300, '30m': 1800, '1h': 3600,
+  '6h': 21600, '1d': 86400, '7d': 604800, '30d': 2592000, 'perm': 0
+};
+const durLabel = {
+  '30s':'30 segundos','5m':'5 minutos','30m':'30 minutos',
+  '1h':'1 hora','6h':'6 horas','1d':'1 dia',
+  '7d':'7 dias','30d':'30 dias','perm':'Permanente'
+};
+
+const DATABASE_TEMPLATE = {
+  keys: {
+    'KEY-TEST-1234-ABCD': {
+      hwid: '1a629da43323311d',
+      uses: 0,
+      userId: '57923',
+      maxUses: 1,
+      username: 'teste',
+      useCount: 2,
+      expiresAt: 1819141430,
+      lastUserId: 1155923,
+      status: 'active',
+      lastUser: 'teste',
+      lastUsed: 17057817,
+      executor: 'Delta 1.1.76.1408'
+    }
+  },
+  config: {
+    defaultDuration: 86400,
+    prefix: 'KEY',
+    systemName: 'KeyVault'
+  }
+};
+
+function databaseTemplateText() {
+  return JSON.stringify(DATABASE_TEMPLATE, null, 2);
+}
+
+function renderDatabaseTemplate() {
+  const preview = document.getElementById('databaseTemplatePreview');
+  if (preview) preview.textContent = databaseTemplateText();
+}
+
+function copyDatabaseTemplate(button) {
+  copyText(databaseTemplateText(), button);
+}
+
+function ingestRecord(rec) {
+  const field = rec && rec.keys && typeof rec.keys === 'object' && !Array.isArray(rec.keys)
+    ? 'keys'
+    : rec && rec.keysi && typeof rec.keysi === 'object' && !Array.isArray(rec.keysi)
+      ? 'keysi'
+      : null;
+  if (field) {
+    sysConfig = { ...sysConfig, ...(rec.config || {}) };
+    remoteKeysField = field;
+    keys = rec[field] || {};
+    blacklist = normalizeBlacklist(rec.blacklist || {});
+    apiLogs = Array.isArray(rec.logs) ? rec.logs : [];
+  } else {
+    keys = (rec && typeof rec === 'object') ? rec : {};
+    blacklist = normalizeBlacklist({});
+    apiLogs = [];
+  }
+}
+
+function normalizeBlacklist(bl) {
+  const out = { hwids: [], userIds: [], accounts: [] };
+  ['hwids', 'userIds', 'accounts'].forEach(type => {
+    (Array.isArray(bl[type]) ? bl[type] : []).forEach(item => {
+      if (item && typeof item === 'object' && !Array.isArray(item)) {
+        out[type].push({
+          value: String(item.value ?? ''), reason: item.reason || '—',
+          date: item.date || Math.floor(Date.now() / 1000),
+          admin: item.admin || 'Sistema', status: item.status || 'active'
+        });
+      } else if (item !== undefined && item !== null && item !== '') {
+        out[type].push({ value: String(item), reason: 'Importado (formato legado)', date: Math.floor(Date.now() / 1000), admin: 'Sistema', status: 'active' });
+      }
+    });
+  });
+  return out;
+}
+
+// Corrige registros antigos/incompletos antes de renderizar ou contar as keys.
+function sanitizeStore() {
+  if (!keys || typeof keys !== 'object' || Array.isArray(keys)) keys = {};
+  Object.keys(keys).forEach(id => {
+    const k = keys[id];
+    if (!k || typeof k !== 'object' || !id) {
+      delete keys[id];
+      return;
+    }
+    k.id = id;
+    // O banco antigo não tinha createdAt; redeemedAt é a melhor data disponível.
+    k.createdAt = Number(k.createdAt || k.created || k.redeemedAt) || Math.floor(Date.now() / 1000);
+    k.expiresAt = Number(k.expiresAt) || 0;
+    k.maxUses = Math.max(0, Number(k.maxUses) || 0);
+    k.useCount = Math.max(0, Number(k.useCount ?? k.uses) || 0);
+    k.uses = k.useCount;
+    k.status = k.status || 'active';
+    k.hwid = k.hwid ?? null;
+    k.userId = k.userId ?? k.lastUserId ?? null;
+    k.lastUserId = k.lastUserId ?? k.userId ?? null;
+    k.username = k.username ?? k.lastUser ?? k.account ?? null;
+    k.displayName = k.displayName ?? null;
+    k.account = k.account ?? k.username ?? k.lastUser ?? null;
+    k.lastUser = k.lastUser ?? k.account ?? null;
+    k.redeemedAt = k.redeemedAt ?? k.lastUsed ?? null;
+    k.device = k.device ?? null;
+    k.executor = k.executor ?? null;
+    k.lastUsed = k.lastUsed ?? k.redeemedAt ?? null;
+    k.durType = k.durType || (k.expiresAt ? '1d' : 'perm');
+  });
+  if (!blacklist || typeof blacklist !== 'object') blacklist = { hwids: [], userIds: [], accounts: [] };
+}
+
+async function loadKeys() {
+  const binId = currentBinId();
+  if (!binId) {
+    const local = readStoredJson(lsKey('kv_db'), {});
+    ingestRecord(local);
+    sanitizeStore();
+    databaseState = { connected: false, message: 'Nenhum Bin ID configurado. O modo local está ativo.', syncedAt: null };
+    setConnectionStatus('disconnected', 'Não conectado — configure um Bin ID');
+    updateCounters();
+    return;
+  }
+  try {
+    const response = await vaultDbRequest(binId);
+    if (!response.ok) throw new Error(`Banco remoto respondeu HTTP ${response.status}.`);
+    const data = await response.json();
+    if (!data || !data.record) throw new Error('Resposta do banco remoto sem o campo record.');
+    ingestRecord(data.record);
+    sanitizeStore();
+    localStorage.setItem(lsKey('kv_db'), JSON.stringify(data.record));
+    databaseState = { connected: true, message: 'Banco remoto sincronizado.', syncedAt: Date.now() };
+    setConnectionStatus('connected', 'Conectado');
+  } catch (e) {
+    const local = readStoredJson(lsKey('kv_db'), {});
+    ingestRecord(local);
+    sanitizeStore();
+    databaseState = { connected: false, message: `Banco remoto indisponível: ${e.message}`, syncedAt: null };
+    setConnectionStatus('error', `Não conectado — ${e.message}`);
+    recordError('Carregamento do banco remoto', e);
+  }
+  updateCounters();
+}
+
+async function saveKeys() {
+  try {
+    sanitizeStore();
+    const payload = { config: sysConfig, [remoteKeysField]: keys, blacklist, logs: apiLogs };
+    localStorage.setItem(lsKey('kv_db'), JSON.stringify(payload));
+    const binId = currentBinId();
+    if (!binId) {
+      databaseState = { connected: false, message: 'Salvo somente neste dispositivo. Configure um Bin ID para sincronizar.', syncedAt: null };
+      setConnectionStatus('disconnected', 'Não conectado — salvo localmente');
+      renderDiagnostics();
+      return true;
+    }
+    const response = await vaultDbRequest(binId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) throw new Error(`Banco remoto respondeu HTTP ${response.status}.`);
+    databaseState = { connected: true, message: 'Banco remoto atualizado.', syncedAt: Date.now() };
+    setConnectionStatus('connected', 'Conectado');
+    renderDiagnostics();
+    return true;
+  } catch (e) {
+    databaseState = { connected: false, message: `Falha ao salvar no banco remoto: ${e.message}`, syncedAt: null };
+    setConnectionStatus('error', `Não conectado — ${e.message}`);
+    recordError('Salvamento no banco remoto', e);
+    toast('⛔ A key não foi confirmada no banco remoto', 'red');
+    return false;
+  }
+}
+
+// ============ KEY GENERATION ============
+function genSecureId(prefix) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const block = n => Array.from(crypto.getRandomValues(new Uint8Array(n)), b => chars[b % chars.length]).join('');
+  return `${prefix}-${block(4)}-${block(4)}-${block(4)}-${block(4)}`;
+}
+
+async function generateKey() {
+  if (!currentAccount || !currentBinId() || !databaseState.connected) {
+    toast('<span class="icon-mark" data-icon="plug" aria-hidden="true"></span> Conecte e verifique o Bin ID antes de gerar uma key', 'yellow');
+    updateGenerationAccess();
+    return;
+  }
+  const btn = document.getElementById('genBtn');
+  btn.dataset.generating = '1';
+  btn.innerHTML = '<span class="spin"></span> Gerando...';
+  btn.disabled = true;
+  try {
+    await new Promise(r => setTimeout(r, 250));
+    const durType = document.getElementById('durationType').value;
+    const maxUses = parseInt(document.getElementById('maxUses').value, 10) || 0;
+    const prefix = (document.getElementById('keyPrefix').value || 'KEY').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8) || 'KEY';
+    const createdBy = document.getElementById('createdBy').value.trim() || 'Admin';
+    const secs = durMap[durType];
+    if (secs === undefined) throw new Error(`Duração inválida: ${durType}`);
+
+    const now = Math.floor(Date.now() / 1000);
+    const isPerm = durType === 'perm';
+    const id = genSecureId(prefix);
+    keys[id] = {
+      id, createdAt: now, expiresAt: isPerm ? 0 : now + secs, durType,
+      maxUses, uses: 0, useCount: 0, createdBy, status: 'active',
+      lastUsed: null, redeemedAt: null, hwid: null, userId: null, account: null, lastUser: null, lastUserId: null,
+      device: null, executor: null
+    };
+    currentKey = id;
+    if (!await saveKeys()) {
+      delete keys[id];
+      currentKey = null;
+      return;
+    }
+    addHistory('created', id);
+
+    const display = document.getElementById('keyDisplay');
+    document.getElementById('generatedKey').textContent = id;
+    document.getElementById('keyMeta').innerHTML = buildMeta(keys[id]);
+    display.classList.add('show');
+    document.getElementById('previewCard').style.display = isPerm ? 'none' : 'block';
+    if (!isPerm) startPreviewCountdown(keys[id]);
+    toast(databaseState.connected
+      ? '<span class="icon-mark" data-icon="key" aria-hidden="true"></span> Key gerada e sincronizada no banco'
+      : '<span class="icon-mark" data-icon="key" aria-hidden="true"></span> Key gerada e salva localmente; conecte um Bin para sincronizar', 'green');
+    updateCounters();
+  } catch (e) {
+    recordError('Geração de key', e);
+    toast(`⛔ Não foi possível gerar a key: ${e.message}`, 'red');
+  } finally {
+    btn.innerHTML = '<span class="icon-mark" data-icon="zap" aria-hidden="true"></span> Gerar Key';
+    delete btn.dataset.generating;
+    btn.disabled = false;
+    updateGenerationAccess();
+    renderUiIcons(btn);
+  }
+}
+
+function buildMeta(k) {
+  const now = Math.floor(Date.now() / 1000);
+  const created = fmtDate(k.createdAt);
+  const expires = k.expiresAt ? fmtDate(k.expiresAt) : '—';
+  return `
+    <span class="meta-chip"><span class="icon-mark" data-icon="calendar" aria-hidden="true"></span> Criada: ${created}</span>
+    <span class="meta-chip"><span class="icon-mark" data-icon="timer" aria-hidden="true"></span> Duração: ${durLabel[k.durType]||k.durType}</span>
+    <span class="meta-chip"><span class="icon-mark" data-icon="clock" aria-hidden="true"></span> Expira: ${expires}</span>
+    <span class="meta-chip"><span class="icon-mark" data-icon="hash" aria-hidden="true"></span> Usos: ${k.maxUses ? k.maxUses+' máx' : 'ilimitado'}</span>
+    <span class="meta-chip"><span class="icon-mark" data-icon="user" aria-hidden="true"></span> ${k.createdBy}</span>
+  `;
+}
+
+// ============ COUNTDOWN ============
+function startPreviewCountdown(k) {
+  clearInterval(countdownInterval);
+  if (!k.expiresAt) return;
+  const update = () => {
+    const rem = k.expiresAt - Math.floor(Date.now() / 1000);
+    const total = k.expiresAt - k.createdAt;
+    document.getElementById('previewCountdown').textContent = rem > 0 ? fmtCountdown(rem) : 'EXPIRADA';
+    const pct = Math.max(0, Math.min(100, (rem / total) * 100));
+    const bar = document.getElementById('previewProgress');
+    bar.style.width = pct + '%';
+    bar.className = 'progress-fill ' + (pct > 50 ? 'fill-green' : pct > 20 ? 'fill-yellow' : 'fill-red');
+  };
+  update();
+  countdownInterval = setInterval(update, 1000);
+}
+
+function fmtCountdown(secs) {
+  if (secs < 0) return '00:00:00';
+  const d = Math.floor(secs / 86400);
+  const h = Math.floor((secs % 86400) / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  if (d > 0) return `${d}d ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m`;
+  if (h > 0) return `${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+  return `${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+}
+
+function fmtDate(ts) {
+  return new Date(ts * 1000).toLocaleString('pt-BR', {
+    day:'2-digit', month:'2-digit', year:'numeric',
+    hour:'2-digit', minute:'2-digit'
+  });
+}
+
+// ============ AVATAR (Roblox thumbnails) ============
+async function fetchRobloxInfo(userId) {
+  if (!userId) return null;
+  const id = String(userId);
+  if (robloxProfileCache[id]) return robloxProfileCache[id];
+  const info = { name: null, displayName: null, avatar: DEFAULT_AVATAR };
+  try {
+    const [profileResult, avatarResult] = await Promise.allSettled([
+      fetch(`https://users.roblox.com/v1/users/${encodeURIComponent(id)}`),
+      fetch(`https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${encodeURIComponent(id)}&size=150x150&format=Png&isCircular=true`)
+    ]);
+    if (profileResult.status === 'fulfilled' && profileResult.value.ok) {
+      const profile = await profileResult.value.json();
+      info.name = profile.name || null;
+      info.displayName = profile.displayName || profile.name || null;
+    }
+    if (avatarResult.status === 'fulfilled' && avatarResult.value.ok) {
+      const data = await avatarResult.value.json();
+      info.avatar = data?.data?.[0]?.imageUrl || DEFAULT_AVATAR;
+    }
+  } catch (e) {
+    // A falha nas APIs do Roblox não impede a consulta da key.
+  }
+  robloxProfileCache[id] = info;
+  avatarCache[id] = info.avatar;
+  return info;
+}
+
+async function fetchAvatar(userId) {
+  if (!userId) return DEFAULT_AVATAR;
+  if (avatarCache[userId]) return avatarCache[userId];
+  avatarCache[userId] = DEFAULT_AVATAR; // evita múltiplas buscas simultâneas do mesmo ID
+  try {
+    await fetchRobloxInfo(userId);
+  } catch (e) {
+    avatarCache[userId] = DEFAULT_AVATAR; // imagem externa indisponível — usa avatar padrão sem quebrar o layout
+  }
+  return avatarCache[userId];
+}
+
+function avatarFor(userId) {
+  if (!userId) return DEFAULT_AVATAR;
+  if (avatarCache[userId]) return avatarCache[userId];
+  fetchRobloxInfo(userId).then(() => {
+    // atualiza a view atual quando a imagem chegar, sem forçar navegação
+    if (document.getElementById('page-keys').style.display !== 'none') renderTable();
+  });
+  return DEFAULT_AVATAR;
+}
+
+function robloxNameFor(k) {
+  const profile = k.lastUserId ? robloxProfileCache[String(k.lastUserId)] : null;
+  return k.lastUser || k.account || profile?.name || profile?.displayName || null;
+}
+
+// ============ BLACKLIST ============
+function isBlacklisted(type, value) {
+  if (value === undefined || value === null || value === '') return false;
+  return (blacklist[type] || []).some(e => e.status === 'active' && String(e.value).toLowerCase() === String(value).toLowerCase());
+}
+
+function blacklistReasonFor(type, value) {
+  const e = (blacklist[type] || []).find(e => e.status === 'active' && String(e.value).toLowerCase() === String(value).toLowerCase());
+  return e ? e.reason : null;
+}
+
+async function addBlacklistEntry() {
+  const type = document.getElementById('bl-type').value;
+  const value = document.getElementById('bl-value').value.trim();
+  const reason = document.getElementById('bl-reason').value.trim() || 'Não especificado';
+  const admin = document.getElementById('bl-admin').value.trim() || 'Admin';
+  if (!value) { toast('<span class="icon-mark" data-icon="warning" aria-hidden="true"></span> Informe um valor para bloquear', 'yellow'); return; }
+  if (isBlacklisted(type, value)) { toast('<span class="icon-mark" data-icon="warning" aria-hidden="true"></span> Este valor já está na blacklist', 'yellow'); return; }
+  confirmAction('Confirmar banimento?', `Bloquear ${labelForBlType(type)}: "${value}"`, async () => {
+    blacklist[type].push({ value, reason, date: Math.floor(Date.now() / 1000), admin, status: 'active' });
+    await saveKeys();
+    document.getElementById('bl-value').value = '';
+    document.getElementById('bl-reason').value = '';
+    toast('<span class="icon-mark" data-icon="ban" aria-hidden="true"></span> Bloqueio adicionado', 'red');
+    renderBlacklist(); updateCounters();
+  });
+}
+
+function labelForBlType(type) { return { hwids: 'HWID', userIds: 'User ID', accounts: 'Conta' }[type] || type; }
+
+async function toggleBlacklistEntry(type, idx, activate) {
+  const entry = blacklist[type][idx];
+  if (!entry) return;
+  const doIt = async () => {
+    entry.status = activate ? 'active' : 'inactive';
+    await saveKeys();
+    toast(activate ? '<span class="icon-mark" data-icon="ban" aria-hidden="true"></span> Entrada reativada' : '<span class="icon-mark" data-icon="check" aria-hidden="true"></span> Entrada desbanida', activate ? 'red' : 'green');
+    renderBlacklist(); updateCounters();
+  };
+  if (!activate) confirmAction('Desbanir esta entrada?', `${labelForBlType(type)}: "${entry.value}"`, doIt);
+  else doIt();
+}
+
+function confirmDeleteBlacklist(type, idx) {
+  toast('<span class="icon-mark" data-icon="ban" aria-hidden="true"></span> Entradas da blacklist não podem ser excluídas', 'yellow');
+}
+
+function renderBlacklist() {
+  const search = (document.getElementById('blSearchInput')?.value || '').toLowerCase();
+  const tbody = document.getElementById('blacklistTable');
+  const empty = document.getElementById('blEmptyState');
+  if (!tbody) return;
+  let rows = [];
+  ['hwids', 'userIds', 'accounts'].forEach(type => {
+    (blacklist[type] || []).forEach((e, idx) => {
+      if (search && !(`${e.value} ${e.reason} ${e.admin}`.toLowerCase().includes(search))) return;
+      rows.push({ type, idx, ...e });
+    });
+  });
+  rows.sort((a, b) => b.date - a.date);
+  document.getElementById('blacklistCount').textContent = rows.filter(r => r.status === 'active').length;
+  if (!rows.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  tbody.innerHTML = rows.map(e => `<tr>
+    <td><span class="type-chip type-${e.type === 'hwids' ? 'hwid' : e.type === 'userIds' ? 'userId' : 'account'}">${labelForBlType(e.type)}</span></td>
+    <td class="mono" style="font-family:'JetBrains Mono',monospace;font-size:12px">${escapeHtml(e.value)}</td>
+    <td style="font-size:12.5px;color:var(--text-2)">${escapeHtml(e.reason)}</td>
+    <td style="font-size:12px;color:var(--text-3)">${fmtDate(e.date)}</td>
+    <td style="font-size:12.5px">${escapeHtml(e.admin)}</td>
+    <td>${e.status === 'active' ? '<span class="status-badge badge-red"><span class="icon-mark" data-icon="slash" aria-hidden="true"></span> Banido</span>' : '<span class="status-badge badge-gray">Inativo</span>'}</td>
+    <td><div class="row-actions">
+      ${e.status === 'active'
+        ? `<button class="icon-btn" onclick="toggleBlacklistEntry('${e.type}',${e.idx},false)" title="Desbanir"><span class="icon-mark" data-icon="check" aria-hidden="true"></span></button>`
+        : `<button class="icon-btn" onclick="toggleBlacklistEntry('${e.type}',${e.idx},true)" title="Banir novamente"><span class="icon-mark" data-icon="ban" aria-hidden="true"></span></button>`}
+    </div></td>
+  </tr>`).join('');
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ============ CONSULTA DE KEY ============
+function lookupKey() {
+  const input = document.getElementById('keyLookupInput');
+  const result = document.getElementById('keyLookupResult');
+  const id = (input?.value || '').trim();
+  if (!result) return;
+  if (!id) {
+    result.style.display = 'block';
+    result.innerHTML = '<div class="banner banner-warn" style="margin-bottom:0">⚠ Cole uma key para consultar.</div>';
+    return;
+  }
+  const k = keys[id];
+  if (!k) {
+    result.style.display = 'block';
+    result.innerHTML = `<div class="banner banner-warn" style="margin-bottom:0">⛔ A key <span class="mono">${escapeHtml(id)}</span> não foi encontrada no banco sincronizado.</div>`;
+    return;
+  }
+  result.style.display = 'block';
+  result.innerHTML = keyLookupHtml(k);
+  if (k.lastUserId) fetchRobloxInfo(k.lastUserId).then(() => {
+    if (keys[id]) {
+      result.innerHTML = keyLookupHtml(keys[id]);
+      renderUiIcons(result);
+    }
+  });
+}
+
+function keyLookupHtml(k) {
+  const profile = k.lastUserId ? robloxProfileCache[String(k.lastUserId)] : null;
+  const userId = k.lastUserId || k.userId || '';
+  const account = k.lastUser || k.account || k.username || profile?.name || 'Não informado';
+  const displayName = k.displayName || profile?.displayName || '—';
+  const currentStatus = getStatus(k);
+  const activated = Boolean(k.hwid);
+  const statusText = activated ? 'Dados carregados com sucesso!' : 'Key ainda não foi ativada no jogo.';
+  return `
+    <div class="lookup-profile">
+      <img class="avatar" src="${avatarFor(userId)}" alt="Avatar Roblox" onerror="this.src='${DEFAULT_AVATAR}'">
+      <div class="lookup-copy">
+        <div class="lookup-name-row">
+          <div>
+            <div class="lookup-name">${escapeHtml(account)}</div>
+            ${displayName !== '—' && displayName !== account ? `<div class="lookup-subtitle">Display name: ${escapeHtml(displayName)}</div>` : ''}
+          </div>
+          ${statusBadge(currentStatus)}
+        </div>
+        <div class="lookup-fields">
+          <div class="lookup-field full">
+            <span class="field-label">Key</span>
+            <b class="field-value purple">${escapeHtml(k.id)}</b>
+          </div>
+          <div class="lookup-field">
+            <span class="field-label">Nome</span>
+            <b class="field-value">${escapeHtml(account)}</b>
+          </div>
+          <div class="lookup-field">
+            <span class="field-label">User ID</span>
+            <b class="field-value green">${escapeHtml(userId || '—')}</b>
+          </div>
+          <div class="lookup-field full">
+            <span class="field-label">HWID</span>
+            <b class="field-value purple">${escapeHtml(k.hwid || '—')}</b>
+          </div>
+          <div class="lookup-field">
+            <span class="field-label">Dispositivo</span>
+            <b class="field-value">${escapeHtml(k.device || '—')}</b>
+          </div>
+          <div class="lookup-field">
+            <span class="field-label">Executor</span>
+            <b class="field-value">${escapeHtml(k.executor || '—')}</b>
+          </div>
+          <div class="lookup-field">
+            <span class="field-label">Usos</span>
+            <b class="field-value">${k.useCount}${k.maxUses ? ' / ' + k.maxUses : ' — ilimitado'}</b>
+          </div>
+          <div class="lookup-field">
+            <span class="field-label">Resgatada em</span>
+            <b class="field-value">${k.redeemedAt ? fmtDate(k.redeemedAt) : '—'}</b>
+          </div>
+          <div class="lookup-status ${activated ? 'ok' : 'warn'}">${activated ? '✓' : '⚠'} ${statusText}</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text-3);margin-top:8px">A consulta é somente leitura e não altera usos, HWID ou validade.</div>`;
+}
+
+// ============ KEY STATUS ============
+function getStatus(k) {
+  if (k.status === 'revoked') return 'revoked';
+  if (!k.expiresAt) return 'active';
+  const now = Math.floor(Date.now() / 1000);
+  if (now > k.expiresAt) return 'expired';
+  if (k.expiresAt - now < 300) return 'expiring';
+  return 'active';
+}
+
+function statusBadge(s) {
+  const m = {
+    active: ['badge-green','● Ativa'],
+    expiring: ['badge-yellow','<span class="icon-mark" data-icon="zap" aria-hidden="true"></span> Expirando'],
+    expired: ['badge-red','<span class="icon-mark" data-icon="x" aria-hidden="true"></span> Expirada'],
+    revoked: ['badge-gray','<span class="icon-mark" data-icon="slash" aria-hidden="true"></span> Revogada']
+  };
+  const [cls, txt] = m[s] || m.expired;
+  return `<span class="status-badge ${cls}">${txt}</span>`;
+}
+
+// ============ TABLE ============
+let countdownIntervals = {};
+
+function setKuView(view) {
+  kuView = view;
+  document.getElementById('viewBtnTable').classList.toggle('active', view === 'table');
+  document.getElementById('viewBtnCards').classList.toggle('active', view === 'cards');
+  document.getElementById('keysTableWrap').style.display = view === 'table' ? 'block' : 'none';
+  document.getElementById('keysCards').style.display = view === 'cards' ? 'grid' : 'none';
+  renderTable();
+}
+
+function filteredRows() {
+  const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  let rows = [];
+  Object.values(keys).forEach(k => {
+    const s = getStatus(k);
+    if (currentFilter === 'active' && s !== 'active' && s !== 'expiring') return;
+    if (currentFilter === 'expiring' && s !== 'expiring') return;
+    if (currentFilter === 'expired' && s !== 'expired') return;
+    if (currentFilter === 'revoked' && s !== 'revoked') return;
+    if (currentFilter === 'unused' && k.useCount > 0) return;
+    if (currentFilter === 'used' && !(k.useCount > 0)) return;
+    if (search && !(`${k.id} ${k.lastUser||''} ${k.account||''} ${k.lastUserId||''} ${k.hwid||''} ${k.executor||''}`.toLowerCase().includes(search))) return;
+    rows.push(k);
+  });
+  rows.sort((a, b) => b.createdAt - a.createdAt);
+  return rows;
+}
+
+function renderTable() {
+  Object.values(countdownIntervals).forEach(clearInterval);
+  countdownIntervals = {};
+
+  const rows = filteredRows();
+  const tbody = document.getElementById('keysTable');
+  const cardsWrap = document.getElementById('keysCards');
+  const empty = document.getElementById('emptyState');
+
+  if (!rows.length) {
+    tbody.innerHTML = ''; cardsWrap.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  if (kuView === 'table') {
+    tbody.innerHTML = rows.map(k => {
+      const s = getStatus(k);
+      const cdId = `cd_${k.id.replace(/-/g,'_')}`;
+      return `<tr>
+        <td class="key-cell-wrap" title="${escapeHtml(k.id)}">
+          <span class="key-cell-value">${escapeHtml(k.id)}</span>
+          <span class="key-cell-meta">ID da credencial</span>
+        </td>
+        <td>${statusBadge(s)}</td>
+        <td>${playerCellHtml(k)}</td>
+        <td style="font-size:12px;color:var(--text-2)">${k.device ? escapeHtml(k.device) : '—'}${k.executor ? '<div class="player-sub">'+escapeHtml(k.executor)+'</div>' : ''}</td>
+        <td style="font-size:12px;color:var(--text-2)">${fmtDate(k.createdAt)}</td>
+        <td><span class="countdown ${s==='expiring'?'expiring':s==='expired'?'expired':''}" id="${cdId}">—</span></td>
+        <td style="font-size:12px;color:var(--text-2)">${k.useCount}${k.maxUses?' / '+k.maxUses:''}</td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" onclick="copyText('${k.id}', this)" title="Copiar"><span class="icon-mark" data-icon="clipboard" aria-hidden="true"></span></button>
+            <button class="icon-btn" onclick="showDetail('${k.id}')" title="Detalhes"><span class="icon-mark" data-icon="eye" aria-hidden="true"></span></button>
+            <button class="icon-btn" onclick="renewKey('${k.id}')" title="Renovar">↺</button>
+            <button class="icon-btn" onclick="revokeKey('${k.id}')" title="Revogar"><span class="icon-mark" data-icon="slash" aria-hidden="true"></span></button>
+            <button class="icon-btn danger" onclick="confirmDelete('${k.id}')" title="Excluir"><span class="icon-mark" data-icon="trash" aria-hidden="true"></span></button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  } else {
+    cardsWrap.innerHTML = rows.map(k => {
+      const s = getStatus(k);
+      return `<div class="ku-card" onclick="showDetail('${k.id}')">
+        <div class="ku-card-top">
+          <img class="avatar" src="${avatarFor(k.lastUserId)}" alt="" onerror="this.src='${DEFAULT_AVATAR}'">
+          <div style="flex:1">
+            <div class="player-name">${robloxNameFor(k) ? escapeHtml(robloxNameFor(k)) : 'Sem usuário vinculado'}</div>
+            <div class="player-sub">${k.lastUserId ? 'ID: '+escapeHtml(String(k.lastUserId)) : 'Sem identificador'}</div>
+          </div>
+          ${statusBadge(s)}
+        </div>
+        <div class="ku-card-key">${k.id}</div>
+        <div class="ku-card-grid">
+          <div>HWID: <b>${k.hwid ? escapeHtml(k.hwid) : '—'}</b></div>
+          <div>Dispositivo: <b>${k.device ? escapeHtml(k.device) : '—'}</b></div>
+          <div>Executor: <b>${k.executor ? escapeHtml(k.executor) : '—'}</b></div>
+          <div>Usos: <b>${k.useCount}${k.maxUses?'/'+k.maxUses:''}</b></div>
+          <div>Emissão: <b>${fmtDate(k.createdAt)}</b></div>
+          <div>Último acesso: <b>${k.lastUsed ? fmtDate(k.lastUsed) : 'Sem acesso'}</b></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  rows.forEach(k => {
+    if (k.expiresAt) {
+      const el = document.getElementById(`cd_${k.id.replace(/-/g,'_')}`);
+      if (!el) return;
+      const update = () => {
+        const rem = k.expiresAt - Math.floor(Date.now() / 1000);
+        if (el) el.textContent = rem > 0 ? fmtCountdown(rem) : 'EXPIRADA';
+      };
+      update();
+      countdownIntervals[k.id] = setInterval(update, 1000);
+    }
+  });
+}
+
+function playerCellHtml(k) {
+  const playerName = robloxNameFor(k);
+  if (!playerName && !k.lastUserId) return '<span class="player-sub">Sem usuário vinculado</span>';
+  return `<div class="player-cell">
+    <img class="avatar avatar-sm" src="${avatarFor(k.lastUserId)}" alt="" onerror="this.src='${DEFAULT_AVATAR}'">
+    <div>
+      <div class="player-name">${escapeHtml(playerName || '—')}</div>
+      <div class="player-sub">${k.lastUserId ? 'ID: '+escapeHtml(String(k.lastUserId)) : ''}</div>
+    </div>
+  </div>`;
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderTable();
+}
+
+// ============ KEY ACTIONS ============
+function copyKey(btn) {
+  const key = document.getElementById('generatedKey').textContent;
+  copyText(key, btn);
+}
+
+// Implementação robusta de cópia: tenta a área de transferência segura, cai para
+// execCommand('copy') via textarea temporário (funciona em file:// e HTTP simples),
+// e por último mostra um prompt para cópia manual se tudo falhar.
+async function copyText(text, btn) {
+  let ok = false;
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      ok = true;
+    } catch (e) { ok = false; }
+  }
+  if (!ok) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-9999px';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch (e) { ok = false; }
+  }
+
+  if (ok) {
+    addHistory('copied', text);
+    toast('<span class="icon-mark" data-icon="clipboard" aria-hidden="true"></span> Key copiada!', 'accent');
+    if (btn) {
+      const original = btn.innerHTML;
+      btn.innerHTML = '<span class="icon-mark" data-icon="check" aria-hidden="true"></span> Copiada!';
+      btn.disabled = true;
+      setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 1600);
+    }
+  } else {
+    // Último recurso: exibe a key para cópia manual (ex: rodando de um .zip/arquivo local sem permissão)
+    window.prompt('Não foi possível copiar automaticamente. Copie manualmente (Ctrl+C):', text);
+  }
+  return ok;
+}
+
+async function renewKey(id) {
+  if (!keys[id]) return;
+  const k = keys[id];
+  const secs = durMap[k.durType];
+  const now = Math.floor(Date.now() / 1000);
+  if (secs) keys[id].expiresAt = now + secs;
+  keys[id].status = 'active';
+  await saveKeys();
+  addHistory('renewed', id);
+  toast('↺ Key renovada', 'green');
+  renderTable();
+  updateCounters();
+}
+
+async function revokeKey(id) {
+  if (!keys[id]) return;
+  keys[id].status = 'revoked';
+  await saveKeys();
+  addHistory('revoked', id);
+  toast('<span class="icon-mark" data-icon="slash" aria-hidden="true"></span> Key revogada', 'yellow');
+  renderTable();
+  updateCounters();
+}
+
+async function deleteKey(id) {
+  delete keys[id];
+  await saveKeys();
+  addHistory('deleted', id);
+  if (currentKey === id) {
+    document.getElementById('keyDisplay').classList.remove('show');
+    document.getElementById('previewCard').style.display = 'none';
+    currentKey = null;
+  }
+  toast('<span class="icon-mark" data-icon="trash" aria-hidden="true"></span> Key excluída', 'red');
+  renderTable();
+  updateDashboard();
+  updateCounters();
+}
+
+function confirmDelete(id) {
+  confirmAction(`Excluir key?`, `${id}\n\nEsta ação é irreversível.`, () => deleteKey(id));
+}
+
+async function deleteExpired() {
+  const before = Object.keys(keys).length;
+  Object.keys(keys).forEach(id => {
+    if (getStatus(keys[id]) === 'expired') delete keys[id];
+  });
+  await saveKeys();
+  const removed = before - Object.keys(keys).length;
+  toast(`<span class="icon-mark" data-icon="trash" aria-hidden="true"></span> ${removed} keys expiradas excluídas`, 'red');
+  renderTable(); updateDashboard(); updateCounters();
+}
+
+async function revokeAll() {
+  Object.values(keys).forEach(k => {
+    if (getStatus(k) === 'active') k.status = 'revoked';
+  });
+  await saveKeys();
+  toast('<span class="icon-mark" data-icon="slash" aria-hidden="true"></span> Todas as keys ativas revogadas', 'yellow');
+  renderTable(); updateDashboard(); updateCounters();
+}
+
+async function nukeAll() {
+  keys = {};
+  history = [];
+  localStorage.removeItem(lsKey('kv_history'));
+  await saveKeys();
+  toast('<span class="icon-mark" data-icon="trash-2" aria-hidden="true"></span> Tudo apagado', 'red');
+  renderTable(); updateDashboard(); updateCounters(); renderHistory();
+}
+
+// ============ DETAIL ============
+function showDetail(id) {
+  const k = keys[id];
+  if (!k) return;
+  const profile = k.lastUserId ? robloxProfileCache[String(k.lastUserId)] : null;
+  const userId = k.lastUserId || k.userId || '';
+  const playerName = k.lastUser || k.account || k.username || robloxNameFor(k);
+  const s = getStatus(k);
+  const rem = k.expiresAt ? k.expiresAt - Math.floor(Date.now() / 1000) : null;
+  const hwidBanned = isBlacklisted('hwids', k.hwid);
+  const userBanned = isBlacklisted('userIds', userId);
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-player">
+      <img class="avatar avatar-lg" src="${avatarFor(userId)}" alt="Avatar Roblox" onerror="this.src='${DEFAULT_AVATAR}'">
+      <div class="detail-player-copy">
+        <div class="detail-player-name">${playerName ? escapeHtml(playerName) : 'Jogador não identificado'}</div>
+        <div class="player-sub">${userId ? 'User ID: '+escapeHtml(String(userId))+(k.displayName || profile?.displayName ? ' • '+escapeHtml(k.displayName || profile.displayName) : '') : 'Key ainda não resgatada'}</div>
+      </div>
+    </div>
+    ${(hwidBanned || userBanned) ? `<div class="banner banner-warn"><span class="icon-mark" data-icon="shield-off" aria-hidden="true"></span> ${hwidBanned ? 'HWID bloqueado' : ''}${hwidBanned && userBanned ? ' • ' : ''}${userBanned ? 'User ID bloqueado' : ''} — acessos futuros serão negados.</div>` : ''}
+    <div class="detail-section">
+      <div class="detail-section-title">Identificação do jogador</div>
+      <div class="detail-grid">
+        <div class="detail-item"><label>Nome</label><span>${playerName ? escapeHtml(playerName) : '—'}</span></div>
+        <div class="detail-item"><label>Display name</label><span>${escapeHtml(k.displayName || profile?.displayName || '—')}</span></div>
+        <div class="detail-item"><label>User ID</label><span class="mono">${userId ? escapeHtml(String(userId)) : '—'}</span></div>
+        <div class="detail-item full"><label>HWID</label><span class="mono">${k.hwid ? escapeHtml(k.hwid) : '—'}</span></div>
+        <div class="detail-item"><label>Dispositivo</label><span>${k.device ? escapeHtml(k.device) : '—'}</span></div>
+        <div class="detail-item"><label>Executor</label><span>${k.executor ? escapeHtml(k.executor) : '—'}</span></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Key e validade</div>
+      <div class="detail-grid">
+        <div class="detail-item full"><label>Key</label><span class="mono">${escapeHtml(k.id)}</span></div>
+        <div class="detail-item"><label>Status</label>${statusBadge(s)}</div>
+        <div class="detail-item"><label>Duração</label><span>${durLabel[k.durType]||k.durType}</span></div>
+        <div class="detail-item"><label>Criada em</label><span>${fmtDate(k.createdAt)}</span></div>
+        <div class="detail-item"><label>Expira em</label><span>${k.expiresAt ? fmtDate(k.expiresAt) : 'Nunca'}</span></div>
+        <div class="detail-item"><label>Tempo restante</label><span style="font-family:monospace;color:var(--${rem&&rem>0?'green':'red'})">${rem&&rem>0?fmtCountdown(rem):(k.expiresAt?'Expirada':'Permanente')}</span></div>
+        <div class="detail-item"><label>Usos</label><span>${k.useCount}${k.maxUses?' / '+k.maxUses+' máx':' (ilimitado)'}</span></div>
+        <div class="detail-item"><label>Criada por</label><span>${escapeHtml(k.createdBy||'—')}</span></div>
+        <div class="detail-item"><label>Último acesso</label><span>${k.lastUsed ? fmtDate(k.lastUsed) : 'Nunca usado'}</span></div>
+        <div class="detail-item"><label>Resgatada em</label><span>${k.redeemedAt ? fmtDate(k.redeemedAt) : '—'}</span></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="copyText('${k.id}', this)"><span class="icon-mark" data-icon="clipboard" aria-hidden="true"></span> Copiar</button>
+      <button class="btn btn-green" onclick="renewKey('${k.id}');document.getElementById('detailModal').classList.remove('show')">↺ Renovar</button>
+      ${k.hwid && !hwidBanned ? `<button class="btn btn-danger" onclick="quickBan('hwids','${escapeHtml(k.hwid)}','${k.id}')"><span class="icon-mark" data-icon="ban" aria-hidden="true"></span> Banir HWID</button>` : ''}
+      <button class="btn btn-danger" onclick="document.getElementById('detailModal').classList.remove('show');confirmDelete('${k.id}')"><span class="icon-mark" data-icon="trash" aria-hidden="true"></span> Excluir</button>
+    </div>
+  `;
+  document.getElementById('detailModal').classList.add('show');
+  if (userId && !robloxProfileCache[String(userId)]) {
+    fetchRobloxInfo(userId).then(() => {
+      if (document.getElementById('detailModal').classList.contains('show')) showDetail(id);
+    });
+  }
+}
+
+function quickBan(type, value, keyId) {
+  confirmAction('Confirmar banimento?', `Bloquear ${labelForBlType(type)}: "${value}"`, async () => {
+    blacklist[type].push({ value, reason: `Bloqueado a partir da key ${keyId}`, date: Math.floor(Date.now()/1000), admin: 'Admin', status: 'active' });
+    await saveKeys();
+    toast('<span class="icon-mark" data-icon="ban" aria-hidden="true"></span> Bloqueio adicionado', 'red');
+    document.getElementById('detailModal').classList.remove('show');
+    renderBlacklist(); renderTable(); updateCounters();
+  });
+}
+
+// ============ DASHBOARD ============
+function updateDashboard() {
+  sanitizeStore(); // garante que só contamos keys realmente existentes no banco
+  const all = Object.values(keys);
+  const now = Math.floor(Date.now() / 1000);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayTs = Math.floor(today.getTime() / 1000);
+  const weekTs = todayTs - 604800;
+
+  const active = all.filter(k => getStatus(k) === 'active').length;
+  const expired = all.filter(k => getStatus(k) === 'expired').length;
+  const revoked = all.filter(k => getStatus(k) === 'revoked').length;
+  const used = all.filter(k => k.useCount > 0).length;
+  const todayCount = all.filter(k => k.createdAt >= todayTs).length;
+  const weekCount = all.filter(k => k.createdAt >= weekTs).length;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card stat-purple"><div class="stat-label">Total</div><div class="stat-value">${all.length}</div></div>
+    <div class="stat-card stat-green"><div class="stat-label">Ativas</div><div class="stat-value">${active}</div></div>
+    <div class="stat-card stat-red"><div class="stat-label">Expiradas</div><div class="stat-value">${expired}</div></div>
+    <div class="stat-card"><div class="stat-label">Revogadas</div><div class="stat-value" style="color:var(--gray)">${revoked}</div></div>
+    <div class="stat-card"><div class="stat-label">Utilizadas</div><div class="stat-value" style="color:var(--yellow)">${used}</div></div>
+    <div class="stat-card"><div class="stat-label">Hoje</div><div class="stat-value">${todayCount}</div></div>
+    <div class="stat-card"><div class="stat-label">Esta semana</div><div class="stat-value">${weekCount}</div></div>
+  `;
+
+  // Mini chart - last 7 days
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - i);
+    const ts = Math.floor(d.getTime() / 1000);
+    const next = ts + 86400;
+    const count = all.filter(k => k.createdAt >= ts && k.createdAt < next).length;
+    const label = d.toLocaleDateString('pt-BR', {weekday:'short'}).slice(0,3);
+    days.push({ count, label });
+  }
+  const maxC = Math.max(...days.map(d => d.count), 1);
+  document.getElementById('miniChart').innerHTML = days.map(d =>
+    `<div class="chart-bar" style="height:${Math.max(4, (d.count/maxC)*72)}px" title="${d.count} keys"></div>`
+  ).join('');
+  document.getElementById('chartLabels').innerHTML = days.map(d =>
+    `<div class="chart-label">${d.label}</div>`
+  ).join('');
+
+  // Status breakdown
+  document.getElementById('statusDonut').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${[['active','var(--green)','Ativas',active],['expired','var(--red)','Expiradas',expired],['revoked','var(--gray)','Revogadas',revoked]].map(([,c,l,n]) => `
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span style="color:var(--text-2)">${l}</span><span style="font-weight:600">${n}</span>
+          </div>
+          <div style="height:5px;background:var(--surface-3);border-radius:3px">
+            <div style="width:${all.length?Math.round(n/all.length*100):0}%;height:100%;background:${c};border-radius:3px;transition:.5s"></div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Recent keys
+  const recent = all.sort((a,b) => b.createdAt - a.createdAt).slice(0,5);
+  document.getElementById('recentKeys').innerHTML = recent.length ? recent.map(k => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="showDetail('${k.id}')">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);flex:1">${k.id}</span>
+      ${statusBadge(getStatus(k))}
+      <span style="font-size:11px;color:var(--text-3)">${fmtDate(k.createdAt)}</span>
+    </div>
+  `).join('') : '<div style="font-size:13px;color:var(--text-3);padding:12px 0">Nenhuma key gerada ainda</div>';
+
+  // Keys próximas de expirar (próximas 24h, ainda ativas)
+  const expiring = all.filter(k => getStatus(k) === 'expiring' || (k.expiresAt && getStatus(k) === 'active' && k.expiresAt - now < 86400))
+    .sort((a,b) => a.expiresAt - b.expiresAt).slice(0,5);
+  const expiringEl = document.getElementById('expiringSoon');
+  if (expiringEl) expiringEl.innerHTML = expiring.length ? expiring.map(k => `
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="showDetail('${k.id}')">
+      <span class="mono" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);flex:1">${k.id.substring(0,18)}…</span>
+      <span class="countdown expiring">${fmtCountdown(Math.max(0,k.expiresAt-now))}</span>
+    </div>
+  `).join('') : '<div style="font-size:12.5px;color:var(--text-3);padding:8px 0">Nenhuma key expirando em breve</div>';
+
+  // Últimos bloqueios
+  const bans = [];
+  ['hwids','userIds','accounts'].forEach(type => (blacklist[type]||[]).forEach(e => bans.push({...e, type})));
+  bans.sort((a,b) => b.date - a.date);
+  const bansEl = document.getElementById('recentBans');
+  if (bansEl) bansEl.innerHTML = bans.length ? bans.slice(0,5).map(e => `
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <span class="type-chip type-${e.type==='hwids'?'hwid':e.type==='userIds'?'userId':'account'}">${labelForBlType(e.type)}</span>
+      <span style="font-size:12.5px;flex:1">${escapeHtml(e.value)}</span>
+      <span style="font-size:11px;color:var(--text-3)">${fmtRelative(e.date*1000)}</span>
+    </div>
+  `).join('') : '<div style="font-size:12.5px;color:var(--text-3);padding:8px 0">Nenhum bloqueio registrado</div>';
+
+}
+
+function updateCounters() {
+  sanitizeStore();
+  const active = Object.values(keys).filter(k => getStatus(k) === 'active').length;
+  document.getElementById('activeCount').textContent = active;
+  const activeBans = ['hwids','userIds','accounts'].reduce((sum,t) => sum + (blacklist[t]||[]).filter(e => e.status === 'active').length, 0);
+  const blEl = document.getElementById('blacklistCount');
+  if (blEl) blEl.textContent = activeBans;
+  updateDashboard();
+}
+
+// ============ HISTORY ============
+const historyIcons = {
+  created: ['#1a3d2a','<span class="icon-mark" data-icon="key" aria-hidden="true"></span>'],
+  copied: ['#1a2a3d','<span class="icon-mark" data-icon="clipboard" aria-hidden="true"></span>'],
+  deleted: ['#3d1a1a','<span class="icon-mark" data-icon="trash" aria-hidden="true"></span>'],
+  revoked: ['#3d2e1a','<span class="icon-mark" data-icon="slash" aria-hidden="true"></span>'],
+  renewed: ['#1a2a3d','<span class="icon-mark" data-icon="refresh" aria-hidden="true"></span>'],
+  expired: ['#3d1a1a','<span class="icon-mark" data-icon="timer" aria-hidden="true"></span>'],
+  redeemed: ['#1a3d2a','<span class="icon-mark" data-icon="check" aria-hidden="true"></span>'],
+  validation_failed: ['#3d1a1a','<span class="icon-mark" data-icon="warning" aria-hidden="true"></span>'],
+};
+
+function addHistory(action, keyId) {
+  history.unshift({ action, keyId: keyId.length > 24 ? keyId.substring(0,24)+'…' : keyId, ts: Date.now() });
+  if (history.length > 200) history.pop();
+  localStorage.setItem(lsKey('kv_history'), JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const empty = document.getElementById('historyEmpty');
+  const labels = { created:'Key criada', copied:'Key copiada', deleted:'Key excluída', revoked:'Key revogada', renewed:'Key renovada', expired:'Key expirada', redeemed:'Key resgatada', validation_failed:'Validação recusada' };
+  if (!history.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  list.innerHTML = history.slice(0,100).map(h => {
+    const [bg, icon] = historyIcons[h.action] || ['#2a2a3a','<span class="icon-mark" data-icon="pin" aria-hidden="true"></span>'];
+    const rel = fmtRelative(h.ts);
+    return `<div class="history-item">
+      <div class="h-icon" style="background:${bg}">${icon}</div>
+      <div class="h-text">
+        <span>${labels[h.action]||h.action}</span>
+        <span class="h-key">${h.keyId}</span>
+      </div>
+      <span class="h-time">${rel}</span>
+    </div>`;
+  }).join('');
+}
+
+function fmtRelative(ts) {
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 60) return 'Agora';
+  if (diff < 3600) return `${Math.floor(diff/60)}m atrás`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h atrás`;
+  return `${Math.floor(diff/86400)}d atrás`;
+}
+
+function clearHistory() {
+  confirmAction('Limpar histórico?', 'O histórico de ações será apagado.', () => {
+    history = [];
+    localStorage.removeItem(lsKey('kv_history'));
+    renderHistory();
+    toast('<span class="icon-mark" data-icon="clipboard" aria-hidden="true"></span> Histórico limpo', 'gray');
+  });
+}
+
+// ============ DIAGNÓSTICO ============
+function renderDiagnostics() {
+  const list = document.getElementById('diagnosticList');
+  const summary = document.getElementById('diagnosticSummary');
+  const errorBox = document.getElementById('diagnosticError');
+  const noError = document.getElementById('diagnosticNoError');
+  if (!list || !summary || !errorBox || !noError) return;
+
+  const failed = diagnosticResults.filter(r => r.status === 'fail').length;
+  const warned = diagnosticResults.filter(r => r.status === 'warn').length;
+  const passed = diagnosticResults.filter(r => r.status === 'ok').length;
+  summary.innerHTML = diagnosticResults.length
+    ? `<div class="diagnostic-summary">
+        <div class="diagnostic-summary-item"><span class="diagnostic-summary-label">Verificações</span><span class="diagnostic-summary-value">${diagnosticResults.length}</span></div>
+        <div class="diagnostic-summary-item"><span class="diagnostic-summary-label">Aprovadas</span><span class="diagnostic-summary-value ok">${passed}</span></div>
+        <div class="diagnostic-summary-item"><span class="diagnostic-summary-label">Atenção</span><span class="diagnostic-summary-value ${failed ? 'fail' : warned ? 'warn' : 'ok'}">${failed + warned}</span></div>
+      </div>
+      <div class="banner ${failed ? 'banner-warn' : 'banner-test'}" style="margin:12px 0 0">
+        ${failed ? '⛔' : warned ? '⚠' : '✅'} ${failed ? `${failed} bloqueio(s) crítico(s) identificado(s)` : warned ? `${warned} ponto(s) requerem atenção` : 'Nenhum bloqueio crítico identificado'}
+        <span style="margin-left:auto;color:var(--text-3);font-size:11px">${keys ? Object.keys(keys).length : 0} registros • ${new Date().toLocaleTimeString('pt-BR')}</span>
+      </div>`
+    : '';
+  list.innerHTML = diagnosticResults.map(r => `
+    <div class="diagnostic-item ${r.status}">
+      <span class="diagnostic-icon">${r.status === 'ok' ? '✓' : r.status === 'warn' ? '!' : '×'}</span>
+      <div style="flex:1"><b>${escapeHtml(r.label)}</b><div class="diagnostic-detail">${escapeHtml(r.detail)}</div></div>
+      ${r.time ? `<span class="diagnostic-time">${escapeHtml(r.time)}</span>` : ''}
+    </div>
+  `).join('');
+
+  if (lastError) {
+    errorBox.style.display = 'block';
+    noError.style.display = 'none';
+    errorBox.textContent = `${lastError.context}\n${lastError.message}\n${new Date(lastError.time).toLocaleString('pt-BR')}`;
+  } else {
+    errorBox.style.display = 'none';
+    noError.style.display = 'block';
+  }
+  const storage = document.getElementById('diagnosticStorage');
+  if (storage) {
+    let bytes = 0;
+    try { bytes = (localStorage.getItem(lsKey('kv_db')) || '').length; } catch (e) {}
+    storage.textContent = JSON.stringify({
+      chave: lsKey('kv_db'),
+      keys: Object.keys(keys || {}).length,
+      blacklist: Object.values(blacklist || {}).reduce((n, list) => n + (Array.isArray(list) ? list.length : 0), 0),
+      historico: Array.isArray(history) ? history.length : 0,
+      tamanhoAproximado: `${bytes} caracteres`,
+      persistencia: 'localStorage + JSONBin',
+      bancoRemoto: databaseState.message,
+      ultimaSincronizacao: databaseState.syncedAt ? new Date(databaseState.syncedAt).toLocaleString('pt-BR') : 'não sincronizado'
+    }, null, 2);
+  }
+}
+
+function runDiagnostics(silent = false) {
+  const results = [];
+  const add = (status, label, detail) => results.push({ status, label, detail, time: new Date().toLocaleTimeString('pt-BR') });
+
+  try {
+    const cryptoReady = Boolean(window.crypto && typeof window.crypto.getRandomValues === 'function');
+    add(cryptoReady ? 'ok' : 'fail', 'Ambiente criptográfico', cryptoReady
+      ? 'A API de aleatoriedade segura está disponível para emissão de identificadores.'
+      : 'A API de aleatoriedade segura não está disponível neste navegador.');
+  } catch (e) {
+    add('fail', 'Ambiente criptográfico', 'Não foi possível acessar a API de aleatoriedade segura.');
+    recordError('Diagnóstico do ambiente criptográfico', e);
+  }
+
+  try {
+    const probe = '__night_vault_diagnostic__';
+    localStorage.setItem(probe, 'ok');
+    const storageWorks = localStorage.getItem(probe) === 'ok';
+    localStorage.removeItem(probe);
+    add(storageWorks ? 'ok' : 'fail', 'Armazenamento local', storageWorks ? 'O navegador consegue ler e salvar o banco local.' : 'O navegador não confirmou a gravação.');
+  } catch (e) {
+    add('fail', 'Armazenamento local', 'O navegador bloqueou o localStorage. Abra em um contexto com armazenamento habilitado.');
+    recordError('Diagnóstico do armazenamento', e);
+  }
+
+  try {
+    const accounts = readAccounts();
+    const savedAccount = currentAccount && accounts[normalizeUsername(currentAccount.username)];
+    const validAccount = Boolean(savedAccount && savedAccount.passwordHash && !('password' in savedAccount));
+    add(validAccount ? 'ok' : 'warn', 'Conta local', validAccount
+      ? 'A conta está registrada sem armazenar a senha em texto puro.'
+      : 'A conta atual não possui um registro local completo.');
+  } catch (e) {
+    add('fail', 'Conta local', 'Não foi possível verificar o armazenamento da conta.');
+  }
+
+  try {
+    const activeSession = localStorage.getItem(SESSION_STORAGE_KEY);
+    const sessionMatches = Boolean(currentAccount && activeSession === normalizeUsername(currentAccount.username));
+    add(sessionMatches ? 'ok' : 'fail', 'Sessão ativa', sessionMatches
+      ? 'A sessão atual corresponde à conta autenticada.'
+      : 'A sessão ativa não corresponde à conta carregada.');
+  } catch (e) {
+    add('fail', 'Sessão ativa', 'Não foi possível validar o vínculo da sessão.');
+  }
+
+  try {
+    const raw = localStorage.getItem(lsKey('kv_db'));
+    const parsed = raw ? JSON.parse(raw) : {};
+    const valid = !raw || (parsed && typeof parsed === 'object' && !Array.isArray(parsed));
+    add(valid ? 'ok' : 'fail', 'Estrutura do banco', valid ? 'O registro salvo tem formato válido.' : 'O registro salvo não é um objeto JSON.');
+  } catch (e) {
+    add('fail', 'Estrutura do banco', 'Existe conteúdo salvo corrompido ou ilegível.');
+  }
+
+  try {
+    const id = genSecureId('TEST');
+    add(/^TEST-[A-Z0-9]{4}(-[A-Z0-9]{4}){3}$/.test(id) ? 'ok' : 'fail', 'Geração segura de IDs', `Exemplo gerado: ${id}`);
+  } catch (e) {
+    add('fail', 'Geração segura de IDs', 'A API de criptografia do navegador não está disponível.');
+    recordError('Diagnóstico da geração de IDs', e);
+  }
+
+  const rawEntries = Object.entries(keys || {});
+  const invalidRecords = rawEntries.filter(([id, k]) => !k || typeof k !== 'object' || Array.isArray(k) || !id);
+  const usageIssues = rawEntries.filter(([, k]) => {
+    if (!k || typeof k !== 'object') return false;
+    const max = Number(k.maxUses || 0);
+    const used = Number(k.useCount ?? k.uses ?? 0);
+    return max > 0 && used > max;
+  });
+  add(invalidRecords.length ? 'fail' : 'ok', 'Integridade do inventário', invalidRecords.length
+    ? `${invalidRecords.length} registro(s) não possuem uma estrutura de objeto válida.`
+    : `${rawEntries.length} registro(s) foram validados sem inconsistências estruturais.`);
+  add(usageIssues.length ? 'warn' : 'ok', 'Limites de utilização', usageIssues.length
+    ? `${usageIssues.length} registro(s) excedem o limite de utilizações configurado.`
+    : 'Os contadores de utilização estão dentro dos limites configurados.');
+
+  sanitizeStore();
+  add(databaseState.connected ? 'ok' : 'warn', 'Sincronização remota', databaseState.connected
+    ? databaseState.message
+    : `${databaseState.message} As alterações permanecem locais até a conexão ser restabelecida.`);
+  diagnosticResults = results;
+  renderDiagnostics();
+  if (!silent) toast(failedDiagnostics(results)
+    ? '⛔ Diagnóstico concluído com bloqueios'
+    : results.some(r => r.status === 'warn')
+      ? '⚠ Diagnóstico concluído com avisos'
+      : '✅ Diagnóstico concluído sem bloqueios', failedDiagnostics(results) ? 'red' : results.some(r => r.status === 'warn') ? 'yellow' : 'green');
+}
+
+function failedDiagnostics(results) {
+  return results.some(r => r.status === 'fail');
+}
+
+function clearLastError() {
+  lastError = null;
+  renderDiagnostics();
+  toast('✅ Mensagem de erro limpa', 'gray');
+}
+
+// ============ TOAST ============
+function toast(msg, type = 'accent') {
+  const colors = { green:'var(--green)', red:'var(--red)', yellow:'var(--yellow)', accent:'var(--accent)', gray:'var(--text-2)' };
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<span style="color:${colors[type]||colors.accent}">${msg}</span>`;
+  wrap.appendChild(el);
+  setTimeout(() => { el.classList.add('toast-out'); setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+// ============ MODAL ============
+let pendingAction = null;
+function confirmAction(title, msg, cb) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMsg').textContent = msg;
+  pendingAction = cb;
+  document.getElementById('modalBg').classList.add('show');
+}
+function closeModal() { document.getElementById('modalBg').classList.remove('show'); pendingAction = null; }
+document.getElementById('modalConfirm').onclick = () => { if (pendingAction) pendingAction(); closeModal(); };
+
+// ============ NAVIGATION ============
+const pages = ['dashboard','generate','keys','blacklist','history','settings','diagnostics'];
+const titles = { dashboard:'Dashboard', generate:'Gerar Key', keys:'Chaves e usuários', blacklist:'Blacklist', history:'Histórico', settings:'Configurações', diagnostics:'Diagnóstico de integridade' };
+
+function showPage(name, el) {
+  pages.forEach(p => document.getElementById(`page-${p}`).style.display = p === name ? 'block' : 'none');
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+  if (el) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+  if (name === 'keys') renderTable();
+  if (name === 'dashboard') updateDashboard();
+  if (name === 'history') renderHistory();
+  if (name === 'blacklist') renderBlacklist();
+  if (name === 'diagnostics') { runDiagnostics(true); renderDiagnostics(); }
+  closeMobile();
+}
+
+// Mobile
+function toggleMobile() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeMobile() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ============ SETTINGS ============
+function toggleBinVisibility() {
+  const input = document.getElementById('cfg-binid');
+  const button = document.getElementById('toggleBinVisibilityBtn');
+  if (!input || !button) return;
+  const visible = input.type === 'text';
+  input.type = visible ? 'password' : 'text';
+  button.title = visible ? 'Ocultar Bin ID' : 'Mostrar Bin ID';
+  button.setAttribute('aria-label', button.title);
+}
+
+async function connectBin() {
+  if (!currentAccount) return;
+  const input = document.getElementById('cfg-binid');
+  const btn = document.getElementById('connectBinBtn');
+  const binId = input.value.trim();
+  if (!binId) {
+    setConnectionStatus('error', 'Não conectado — informe um Bin ID');
+    toast('<span class="icon-mark" data-icon="warning" aria-hidden="true"></span> Informe o Bin ID', 'yellow');
+    return;
+  }
+
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Verificando...';
+  setConnectionStatus('disconnected', 'Verificando o Bin ID...');
+  try {
+    const response = await vaultDbRequest(binId);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (!data || !data.record || typeof data.record !== 'object' || Array.isArray(data.record)) {
+      throw new Error('o registro retornado não é válido');
+    }
+
+    currentAccount.binId = binId;
+    saveCurrentAccount();
+    ingestRecord(data.record);
+    sanitizeStore();
+    localStorage.setItem(lsKey('kv_db'), JSON.stringify(data.record));
+    databaseState = { connected: true, message: 'Banco remoto sincronizado.', syncedAt: Date.now() };
+    setConnectionStatus('connected', 'Conectado');
+    updateCounters();
+    renderTable();
+    renderBlacklist();
+    renderDiagnostics();
+    toast('<span class="icon-mark" data-icon="check" aria-hidden="true"></span> Bin conectado com sucesso', 'green');
+  } catch (e) {
+    setConnectionStatus('error', `Não conectado — ${e.message}`);
+    databaseState = { connected: false, message: `Bin não acessível: ${e.message}`, syncedAt: null };
+    recordError('Verificação do Bin ID', e);
+    toast(`⛔ Não foi possível conectar ao Bin: ${e.message}`, 'red');
+  } finally {
+    btn.innerHTML = original;
+    btn.disabled = false;
+    renderUiIcons(btn);
+  }
+}
+
+async function saveSettings() {
+  sysConfig.systemName = document.getElementById('cfg-name').value.trim() || 'NIGHT Vault';
+  const prefix = document.getElementById('cfg-prefix').value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
+  sysConfig.prefix = prefix || 'KEY';
+  sysConfig.defaultDuration = durMap[document.getElementById('cfg-duration').value] || 86400;
+  sysConfig.defaultMaxUses = parseInt(document.getElementById('cfg-maxuses').value, 10) || 0;
+  document.getElementById('keyPrefix').value = sysConfig.prefix;
+  const saved = await saveKeys();
+  if (saved) toast(`<span class="icon-mark" data-icon="save" aria-hidden="true"></span> Configurações salvas${databaseState.connected ? '' : ' localmente'}`, 'green');
+}
+
+// ============ REFRESH ============
+let backgroundSyncBusy = false;
+
+async function syncRemoteInBackground() {
+  if (!currentAccount || backgroundSyncBusy) return;
+  backgroundSyncBusy = true;
+  try {
+    await loadKeys();
+    const page = document.getElementById('pageTitle').textContent;
+    if (page === titles.keys) renderTable();
+    if (page === titles.dashboard) updateDashboard();
+    if (page === titles.blacklist) renderBlacklist();
+
+    const lookupInput = document.getElementById('keyLookupInput');
+    const lookupResult = document.getElementById('keyLookupResult');
+    if (lookupInput?.value.trim() && lookupResult?.style.display !== 'none') lookupKey();
+  } finally {
+    backgroundSyncBusy = false;
+  }
+}
+
+async function refreshAll() {
+  await loadKeys();
+  const page = document.getElementById('pageTitle').textContent;
+  if (page === titles.keys) renderTable();
+  if (page === titles.dashboard) updateDashboard();
+  if (page === titles.blacklist) renderBlacklist();
+  toast('<span class="icon-mark" data-icon="refresh" aria-hidden="true"></span> Atualizado', 'accent');
+}
+
+
+// ============ AUTO EXPIRE CHECK ============
+function checkExpired() {
+  const now = Math.floor(Date.now() / 1000);
+  let changed = false;
+  Object.values(keys).forEach(k => {
+    if (k.status === 'active' && k.expiresAt && now > k.expiresAt) {
+      k.status = 'expired';
+      addHistory('expired', k.id);
+      changed = true;
+    }
+  });
+  if (changed) { saveKeys(); updateCounters(); renderTable(); }
+}
+
+// ============ INIT ============
+async function init() {
+  const keyLookupInput = document.getElementById('keyLookupInput');
+  if (keyLookupInput) keyLookupInput.addEventListener('keydown', e => { if (e.key === 'Enter') lookupKey(); });
+
+  const sessionUsername = normalizeUsername(localStorage.getItem(SESSION_STORAGE_KEY));
+  const account = sessionUsername ? readAccounts()[sessionUsername] : null;
+  if (account) {
+    await enterAccount(account);
+  } else {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+    showAuthView('login');
+  }
+
+  setInterval(checkExpired, 5000);
+  // Atualiza os dados resgatados sem exigir que o administrador clique em Atualizar.
+  setInterval(syncRemoteInBackground, 20000);
+}
+
+init();
+</script>
+</body>
+</html>
